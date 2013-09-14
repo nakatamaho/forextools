@@ -1,0 +1,31 @@
+2013/8/8 NAKATA Maho
+
+This is a discrete cosine transform based smoother especially for
+forign exchange market on Metatrader4.
+
+* This indicator is tested on Metatrader4 (Alpari).
+* Mingw http://www.mingw.org/ and fftw library must be installed to build this indicator.
+You may want to use ../fftw/go.sh for installation for fftw library. 
+* Makefile must be modified: MT4DIR should be adjusted for your environment.
+Currently set as:
+MT4DIR=c:/Program\ Files/Alpari\ DEMO\ 1
+
+* sample out put of make and installation
+$ make clean ; make ; make install
+rm -f *~ *def *a *.o *ex4 *.log fftwinterface.dll fftwinterface.o
+c:/Program\ Files/Alpari\ DEMO\ 1/MetaLang.exe dctsmoothing.mq4
+MetaQuotes Language 4 compiler build 509 (24 Jun 2013)
+Copyright 2001-2013, MetaQuotes Software Corp.
+
+Exp file "dctsmoothing.ex4" produced - 0 error(s), 0 warning(s)
+mingw32-c++ -Ic:/mingw/msys/1.0/local/include -march=corei7 -O2 -shared -c ../fftwinterface/fftwinterface.cpp
+mingw32-c++ -shared -o fftwinterface.dll fftwinterface.o -Wl,--kill-at,--output-def,fftwinterface.def,--out-implib,fftwinterface.a -Lc:/mingw/msys/1.0/local/lib -Wl,-Bstatic -lfftw3
+#objdump.exe -p fftwinterface.dll | grep "\.dll"
+rm -f c:/Program\ Files/Alpari\ DEMO\ 1/experts/indicators/dctsmoothing.*
+rm -f c:/Program\ Files/Alpari\ DEMO\ 1/experts/libraries/fftwinterface.*
+rm -f c:/Program\ Files/Alpari\ DEMO\ 1/libgcc_s_dw2-1.dll
+cp dctsmoothing.ex4 c:/Program\ Files/Alpari\ DEMO\ 1/experts/indicators
+cp fftwinterface.dll c:/Program\ Files/Alpari\ DEMO\ 1/experts/libraries
+cp c:/mingw/bin/libgcc_s_dw2-1.dll c:/Program\ Files/Alpari\ DEMO\ 1
+
+Enjoy!

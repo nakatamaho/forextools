@@ -1,0 +1,21 @@
+2013/9/10 NAKATA Maho
+This indicator is a oversamper of arbitrary filters for forign exchange market on Metatrader4.
+
+* This indicator is tested on Metatrader4 (Alpari).
+* The FFTW library must be installed http://www.fftw.org/ at /usr/local/lib
+!NOTE! We use static library instead of dynamic one. We compiled as follows:
+$ ./configure --with-our-malloc16 --with-windows-f77-mangling \
+--disable-shared --enable-static --enable-threads --with-combined-threads \
+--enable-sse2
+$ make
+$ make install
+
+* Mingw http://www.mingw.org/ must be installed to build this indicator.
+* Makefile must be modified: MT4DIR should be adjusted for your environment 
+MT4DIR=c:/Program\ Files/Alpari\ DEMO\ 1
+
+* Then, just type
+$ make clean; make; make install
+
+Enjoy!
+ NAKATA Maho
