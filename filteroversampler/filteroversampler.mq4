@@ -29,7 +29,8 @@ either expressed or implied, of NAKATA Maho.
 #property copyright "NAKATA Maho"
 #property link "https://github.com/nakatamaho/filteroversampler"
 
-#property indicator_separate_window
+//#property indicator_separate_window
+#property indicator_chart_window
 #property indicator_buffers 1
 
 #import "fftwinterface.dll"
