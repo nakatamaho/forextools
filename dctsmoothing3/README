@@ -1,0 +1,40 @@
+2013/8/8 NAKATA Maho
+This is a discrete fourier transform based smoother for forign exchange market.
+dctsmoothing3 draws three curves at the same time whereas dctsmoothing
+draws only one curve.
+
+* This indicator is tested on Metatrader4 (Alpari).
+* just rectangular window are used to cut higher frequency components.
+* FFTW must be installed http://www.fftw.org/ at /usr/local/lib
+
+!NOTE! We use static library instead of dynamic one. We compiled as follows:
+$ ./configure --with-our-malloc16 --with-windows-f77-mangling \
+--disable-shared --enable-static --enable-threads --with-combined-threads \
+--enable-sse2
+$ make
+$ make install
+
+* Mingw http://www.mingw.org/ must be installed to build this indicator.
+* Makefile must be modified: MT4DIR should be adjusted for your environment 
+MT4DIR=/c/Program\ Files/Alpari\ Japan\ DEMO\ 1
+
+* Then, just type
+$ make clean; make; make install
+rm -f *~ *def *a *.o *ex4 *.log fftwinterface.dll
+/c/Program\ Files/Alpari\ Japan\ DEMO\ 1/MetaLang.exe dctsmoothing3.mq4
+MetaQuotes Language 4 compiler build 509 (24 Jun 2013)
+Copyright 2001-2013, MetaQuotes Software Corp.
+
+Exp file "dctsmoothing3.ex4" produced - 0 error(s), 0 warning(s)
+g++ -I/usr/local/include -march=corei7 -O2 -shared -c fftwinterface.cpp
+g++ -shared -o fftwinterface.dll fftwinterface.o -Wl,--kill-at,--output-def,fftwinterface.def,--out-implib,fftwinterface.a -L/usr/local/lib -Wl,-Bstatic -lfftw3
+#objdump.exe -p fftwinterface.dll | grep "\.dll"
+rm -f /c/Program\ Files/Alpari\ Japan\ DEMO\ 1/experts/indicators//dctsmoothing3.*
+rm -f /c/Program\ Files/Alpari\ Japan\ DEMO\ 1/experts/libraries//fftwinterface.*
+rm -f /c/Program\ Files/Alpari\ Japan\ DEMO\ 1/libgcc_s_dw2-1.dll
+cp dctsmoothing3.ex4 /c/Program\ Files/Alpari\ Japan\ DEMO\ 1/experts/indicators/
+cp fftwinterface.dll /c/Program\ Files/Alpari\ Japan\ DEMO\ 1/experts/libraries/
+cp /mingw/bin/libgcc_s_dw2-1.dll /c/Program\ Files/Alpari\ Japan\ DEMO\ 1/
+
+Enjoy!
+
