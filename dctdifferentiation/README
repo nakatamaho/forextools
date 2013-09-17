@@ -1,0 +1,29 @@
+2013/8/8 NAKATA Maho
+This indicator diffenciates any discrete functions via smoothing
+by discrete cosine transformation on Metatrader4.
+First, it applies the discrete cosine transformation to the curve,
+then differenciate analytically. The 1st and 2nd derivatives can be obtained.
+
+This indicator calculates 1st derivative of forex curve, which
+smoothed by the discrete cosine transformation then followed by
+a rectangular windowed bandpass filter.
+
+* This indicator is tested on Metatrader4 (Alpari).
+* The FFTW library must be installed http://www.fftw.org/ at /usr/local/lib
+!NOTE! We use static library instead of dynamic one. We compiled as follows:
+$ ./configure --with-our-malloc16 --with-windows-f77-mangling \
+--disable-shared --enable-static --enable-threads --with-combined-threads \
+--enable-sse2
+$ make
+$ make install
+
+* Mingw http://www.mingw.org/ must be installed to build this indicator.
+* Makefile must be modified: MT4DIR should be adjusted for your environment 
+MT4DIR=/c/Program\ Files/Alpari\ Japan\ DEMO\ 1
+
+* Then, just type
+$ make clean; make; make install
+...
+
+Enjoy!
+ NAKATA Maho
