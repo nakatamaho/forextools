@@ -66,6 +66,7 @@ void start()
     }
 }
 
+//cf. http://msdn.microsoft.com/ja-jp/library/cc429926.aspx
 datetime GetCurrentTimeInUTC()
 {
     int WinAPI_SYSTEMTIME[4];
