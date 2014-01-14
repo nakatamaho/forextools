@@ -29,60 +29,28 @@ either expressed or implied, of NAKATA Maho.
 #property copyright "NAKATA Maho"
 #property link "https://github.com/nakatamaho/filteroversampler"
 
-//#property indicator_separate_window
 #property indicator_chart_window
-#property indicator_buffers 1
+#property indicator_buffers 2
 
-#import "fftwinterface.dll"
-void fastcosinetransform(double &a[], int dctlength, int inversefct);
-void fastsinetransform(double &a[], int dctlength, int inversefct);
-void dct1stderivative(double &a[], int dctlength);
-void dct2ndderivative(double &a[], int dctlength);
-
-#import
-
-//extern double n = 9;
-//extern int cutoff_frequency_short = 128;      //cut-off frequency
-//extern int cutoff_frequency_medium = 32;
-extern double n = 10;
-extern int cutoff_frequency_short = 1024;	//cut-off frequency
-extern int cutoff_frequency_medium = 0;
-extern double Gamma = 0.7;	//parameter for LagurreFilter
+extern double Gamma = 0.5;
 extern int oversampleperiod = PERIOD_M15;
-int dctlength;
+extern int length = 128;
+
 bool ErrorFlag = FALSE;
-double DCT_buffer[];
-double DCTderiv_buffer[];
-double tmp_buffer[];
-double tmp_buffer2[];
 double LaguerreFilterBuffer[];
+double EhlersFilterBuffer[];
+
 int init()
 {
     Print("initialized");
-    SetIndexStyle(0, DRAW_LINE, EMPTY, 2, Red);
-    SetIndexBuffer(0, DCT_buffer);
-    SetIndexStyle(1, DRAW_LINE, EMPTY, 2, Blue);
-    SetIndexBuffer(1, DCTderiv_buffer);
-    dctlength = MathPow(2, n);
-    int M = ArrayResize(tmp_buffer, dctlength);
-    if (M < dctlength) {
-	Print("Cannot allocate memory", dctlength, M);
-	ErrorFlag = TRUE;
-	return (0);
-    }
-    M = ArrayResize(tmp_buffer2, dctlength);
-    if (M < dctlength) {
-	Print("Cannot allocate memory", dctlength, M);
-	ErrorFlag = TRUE;
-	return (0);
-    }
-    M = ArrayResize(LaguerreFilterBuffer, dctlength);
-    if (M < dctlength) {
-	Print("Cannot allocate memory", dctlength, M);
-	ErrorFlag = TRUE;
-	return (0);
-    }
-    SetIndexDrawBegin(0, Bars - M);
+    SetIndexStyle(0, DRAW_LINE, EMPTY, 4, Red);
+    SetIndexBuffer(0, LaguerreFilterBuffer);
+    SetIndexDrawBegin(0, length);
+
+    SetIndexStyle(1, DRAW_LINE, EMPTY, 4, Blue);
+    SetIndexBuffer(1, EhlersFilterBuffer);
+    SetIndexDrawBegin(1, length);
+
     return (0);
 }
 
@@ -94,38 +62,57 @@ int deinit()
 int start()
 {
     int i;
-    LaguerreFilter(dctlength, Gamma, LaguerreFilterBuffer, oversampleperiod);
-    for (i = dctlength - 1; i >= 0; i--) {
-	tmp_buffer[i] = LaguerreFilterBuffer[i];
-    }
-    fastcosinetransform(tmp_buffer, dctlength, false);
-
-//bandpass filter by a rectangular window.
-    for (i = 0; i < dctlength; i++) {
-	if (i >= cutoff_frequency_short)
-	    tmp_buffer[i] = .0;
-	if (i <= cutoff_frequency_medium)
-	    tmp_buffer[i] = .0;
-    }
-
-//1st derivative
-    ArrayCopy(tmp_buffer2, tmp_buffer);
-    dct1stderivative(tmp_buffer2, dctlength);
-
-//reverse transformation
-    fastcosinetransform(tmp_buffer, dctlength, true);
-    for (i = 0; i < dctlength; i++) {
-	DCT_buffer[i] = tmp_buffer[i];
-    }
-    for (i = 0; i < dctlength; i++) {
-	DCTderiv_buffer[i] = tmp_buffer2[i];
-    }
+//    LaguerreFilter(length, Gamma, LaguerreFilterBuffer, oversampleperiod);
+    EhlersFilter(length, EhlersFilterBuffer, oversampleperiod);
     return (0);
 }
 
 double P(int index, int timeframe)
 {
     return ((iHigh(NULL, timeframe, index) + iLow(NULL, timeframe, index)) / 2.0);
+}
+
+void EhlersFilter(int period, double &EhlersFilterBuffer[], int timeframe)
+{
+    double Smooth[], SumCoef, Num;
+    double Coef[], Distance2;
+    double tmpfilterbuffer[];
+
+    int M, s, count, lookback, length = 10;
+    int currentperiod = Period();
+    int oversampleratio = currentperiod / timeframe;
+    int oversamplelength = period * oversampleratio;
+
+    M = ArrayResize(Smooth, oversamplelength);
+    M = ArrayResize(Coef, oversamplelength);
+    M = ArrayResize(tmpfilterbuffer, oversamplelength);
+
+    for (s = oversamplelength; s >= 0; s--) {
+	Smooth[s] = (P(s, timeframe) + 2.0 * P(s, timeframe) + 2.0 * P(s, timeframe) + P(s, timeframe)) / 6.0;
+    }
+    for (s = oversamplelength; s >= 0; s--) {
+	Distance2 = 0.0;
+	for (lookback = 0; lookback < length; lookback++) {
+	    Distance2 = Distance2 + (Smooth[s] - Smooth[s + lookback]) * (Smooth[s] - Smooth[s + lookback]);
+	}
+	Coef[s] = Distance2;
+
+	Num = 0.0;
+	SumCoef = 0.0;
+	for (count = 0; count < length; count++) {
+	    Num = Num + Coef[count + s] * Smooth[count + s];
+	    SumCoef = SumCoef + Coef[count + s];
+	}
+	if (MathAbs(SumCoef) != 0.0) {
+	    tmpfilterbuffer[s] = Num / SumCoef;
+	}
+    }
+    for (s = 0; s < period; s++) {
+	EhlersFilterBuffer[s] = (tmpfilterbuffer[s * oversampleratio]
+				   + 2.0 * tmpfilterbuffer[s * oversampleratio + 1]
+				   + 2.0 * tmpfilterbuffer[s * oversampleratio + 2]
+				   + tmpfilterbuffer[s * oversampleratio + 3]) / 6.0;
+    }
 }
 
 void LaguerreFilter(int length, double Gamma, double &LaguerreFilterBuffer[], int timeframe)
@@ -144,6 +131,7 @@ void LaguerreFilter(int length, double Gamma, double &LaguerreFilterBuffer[], in
     M = ArrayResize(L2, oversamplelength);
     M = ArrayResize(L3, oversamplelength);
     M = ArrayResize(tmpfilterbuffer, oversamplelength);
+
     for (s = oversamplelength; s >= 0; s--) {
 	if (s > oversamplelength - 4) {
 	    L0[s] = P(s, timeframe);
