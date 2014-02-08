@@ -69,3 +69,10 @@ _DLLAPI int __stdcall mql_dgesdd(int matrix_order, char jobz, int m, int n, doub
 {
   return LAPACKE_dgesdd(matrix_order, jobz, (lapack_int)m, (lapack_int)n, a, (lapack_int)lda, s, u, (lapack_int)ldu, vt, (lapack_int)ldvt);
 }
+
+_DLLAPI int __stdcall mql_dgels(int matrix_order, char trans, int m, int n, int nrhs, double *a, int lda, double *b, int ldb)
+{
+  return LAPACKE_dgels(matrix_order, trans, (lapack_int)m, (lapack_int)n, (lapack_int) nrhs, a, (lapack_int) lda, b, (lapack_int)ldb );
+}
+
+

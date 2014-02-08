@@ -75,5 +75,6 @@ void mql_dtrsm(CBLAS_ORDER Order, CBLAS_SIDE Side, CBLAS_UPLO Uplo, CBLAS_TRANSP
 int mql_dsyev(int matrix_order, char jobz, char uplo, int n, double &a[], int lda, double &w[]);
 int mql_dgesvd(int matrix_order, char jobu, char jobvt, int m, int n, double &a[], int lda, double &s[], double &u[], int ldu, double &vt[], int ldvt, double &superb[]);
 int mql_dgesdd(int matrix_order, char jobz, int m, int n, double &a[], int lda, double &s[], double &u[], int ldu, double &vt[], int ldvt);
+int mql_dgels(int matrix_order, char trans, int m, int n, int nrhs, double &a[], int lda, double &b[], int ldb);
 #import
 
