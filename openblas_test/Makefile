@@ -4,7 +4,7 @@ ifeq ($(UNAME),$(filter $(UNAME),CYGWIN MINGW32))
 CXX        = g++
 FC         = gfortran
 CXXFLAGS   = -Ic:/mingw/msys/1.0/local/include -Wall
-LDFLAGS    = -Lc:/mingw/msys/1.0/local/lib
+LDFLAGS    = -Lc:/mingw/msys/1.0/local/lib -static-libgcc -static-libgfortran -static-libstdc++
 LIBS       = -lopenblas -lgfortran
 endif
 ifeq ($(UNAME),Darwin)
