@@ -32,26 +32,17 @@ either expressed or implied, of NAKATA Maho.
 #property indicator_chart_window
 
 #include "mql_lapack.mqh"
-#define min(X,Y) ((X) < (Y) ? (X) : (Y))
 
 //Matlab/Octave format
-void printmat(int N, int M, double &A[], int LDA)
+void printvec(int N, double &x[])
 {
     double mtmp;
     string STR;
     STR = "[ ";
     for (int i = 0; i < N; i++) {
-	STR = STR + ("[ ");
-	for (int j = 0; j < M; j++) {
-	    mtmp = A[i + j * LDA];
-	    STR = STR + StringFormat("%5.2e", mtmp);
-	    if (j < M - 1)
-		STR = STR + (", ");
-	}
-	if (i < N - 1)
-	    STR = STR + ("]; ");
-	else
-	    STR = STR + ("] ");
+        mtmp = x[i];
+        STR = STR + StringFormat("%5.2e", mtmp);
+        if (i < N-1) STR = STR + (", ");
     }
     STR = STR + ("]");
     Print(STR);
@@ -59,34 +50,20 @@ void printmat(int N, int M, double &A[], int LDA)
 
 int init()
 {
-    int m = 3, n = 4, ret;
-    double A[], U[], VT[], S[];
+    int n = 4;
+    double x[], y[], ddot_ret;
+    ArrayResize(x, n);
+    ArrayResize(y, n);
 
-    ArrayResize(A, m * n);
-    ArrayResize(U, m * m);
-    ArrayResize(VT, n * n);
-    ArrayResize(S, min(m, n));
+    x[0] = 1;    x[1] = 8;    x[2] = 3;    x[3] = 4;
+    y[0] = -3;   y[1] = 9;    y[2] = 1;    y[3] = 10;
 
-    //setting A matrix
-    A[0 + 0 * m] = 1;    A[0 + 1 * m] = 2;    A[0 + 2 * m] = 3;    A[0 + 3 * m] = 4;
-    A[1 + 0 * m] = 5;    A[1 + 1 * m] = 6;    A[1 + 2 * m] = 7;    A[1 + 3 * m] = 8;
-    A[2 + 0 * m] = 9;    A[2 + 1 * m] = 10;   A[2 + 2 * m] = 11;   A[2 + 3 * m] = 12;
-
-    printf("A =");    printmat(m, n, A, m);    printf("\n");
-    ret = mql_dgesdd('A', m, n, A, m, S, U, m, VT, n);
-
-    //print out some results.
-    printf("#singular values\n");
-    printf("S =");    printmat(min(m, n), 1, S, 1);    printf("\n");
-    printf("#U matrix\n");
-    printf("U =");    printmat(m, m, U, m);    printf("\n");
-    printf("#V^t matrix\n");
-    printf("Vt =");   printmat(n, n, VT, n);    printf("\n");
-    printf("#You can check result by octave/matlab by\n");
-    printf("[u, s, v] = svd (A) \n");
-    printf("#u*s*v' should be equal to A\n");
-    printf("u*s*v' \n");
-    printf("U*diag(S,%d,%d)*Vt \n",m,n);
+    printf("x =");    printvec(n, x);    printf("\n");
+    printf("y =");    printvec(n, y);    printf("\n");
+    ddot_ret = mql_ddot(n, x, 1, y, 1);
+    printf("ans = %lf", ddot_ret);  
+    printf("#check by Matlab/Octave by:\n");
+    printf("x * y'\n");
 
     return (0);
 }

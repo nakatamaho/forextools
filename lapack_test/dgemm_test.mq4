@@ -82,7 +82,7 @@ int init()
     printf("C =");    printmat(n, n, C, n);    printf("\n");
     alpha = 3.0;
     beta = -2.0;
-    mql_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, n, n, n, alpha, A, n, B, n, beta, C, n);
+    mql_dgemm('N', 'N', n, n, n, alpha, A, n, B, n, beta, C, n);
     printf("alpha = %5.3e\n", alpha);
     printf("beta  = %5.3e\n", beta);
     printf("ans=");    printmat(n, n, C, n);    printf("\n");

@@ -12,8 +12,10 @@ MINGWHOME       = c:/mingw
 MT4EXPERTDIR    = MQL4/Experts
 MT4INDICATORDIR = MQL4/Indicators
 MT4LIBRARYDIR   = MQL4/Libraries
-LAPACKLIB       = -lopenblas
-INDICATORs_SRC  = dgemm_test.mq4 dsyev_test.mq4 dgesvd_test.mq4 dgesdd_test.mq4 dgels_test.mq4
+#LAPACKLIB       = -L$(MSYSHOME)/local/lib -lopenblas
+LAPACKLIB       = $(MSYSHOME)/local/lib/liblapacke.a $(MSYSHOME)/local/lib/liblapack.a $(MSYSHOME)/local/lib/libblas.a
+STATICALIZER    = -static -lgfortran -static-libgfortran -static-libgcc
+INDICATORs_SRC  = dgemm_test.mq4 dsyev_test.mq4 dgesvd_test.mq4 dgesdd_test.mq4 dgels_test.mq4 ddot_test.mq4
 INDICATORs      = $(INDICATORs_SRC:%.mq4=%.ex4)
 LAPACKINTERFACE = lapackinterface
 
@@ -27,8 +29,8 @@ all: $(INDICATORs) $(LAPACKINTERFACE).dll
 
 $(LAPACKINTERFACE).dll: $(LAPACKINTERFACE).cpp
 	$(CXX) -I$(MSYSHOME)/local/include -O2 -shared -c $(LAPACKINTERFACE).cpp
-	$(CXX) -shared -o $(LAPACKINTERFACE).dll $(LAPACKINTERFACE).o -Wl,--kill-at,--output-def,$(LAPACKINTERFACE).def,--out-implib,$(LAPACKINTERFACE).a -L$(MSYSHOME)/local/lib  -Wl,-Bstatic $(LAPACKLIB) -lgfortran -static-libgcc
-	objdump.exe -p $(LAPACKINTERFACE).dll | grep "\.dll"
+	$(CXX) -shared -o $(LAPACKINTERFACE).dll $(LAPACKINTERFACE).o -Wl,--kill-at,--output-def,$(LAPACKINTERFACE).def,--out-implib,$(LAPACKINTERFACE).a $(LAPACKLIB) $(STATICALIZER)
+	#objdump.exe -p $(LAPACKINTERFACE).dll | grep "\.dll"
 
 install:
 	for mt4dir in $(MT4DIRs) ; do \
@@ -43,6 +45,5 @@ install:
 		done \
 	) ;\
 	done
-
 clean:
-	rm -f *~ *def *a *.o *.log \#* *_ $(LAPACKINTERFACE).dll $(INDICATORs) ll
+	rm -f *~ $(LAPACKINTERFACE).def $(LAPACKINTERFACE).a *.o *.log \#* *_ $(LAPACKINTERFACE).dll $(INDICATORs) ll

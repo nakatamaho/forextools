@@ -71,7 +71,7 @@ int init()
     printf("A =");    printmat(n, n, A, n);    printf("\n");
 
     //get Eigenvalue
-    ret = mql_dsyev(LAPACK_COL_MAJOR, 'V', 'U', n, A, n, w);
+    ret = mql_dsyev('V', 'U', n, A, n, w);
 
     //print out some results.
     printf("#eigenvalues \n");

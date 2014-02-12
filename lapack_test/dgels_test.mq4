@@ -82,7 +82,7 @@ int init()
     printf("A =");    printmat(m, n, A, lda);    printf("\n");
     printf("B =");    printmat(m, nrhs, B, ldb); printf("\n");
 
-    mql_dgels(LAPACK_COL_MAJOR,'N', m, n, nrhs, A, lda, B, ldb);
+    mql_dgels('N', m, n, nrhs, A, lda, B, ldb);
 
     printf("B =");    printmat(n, nrhs, B, ldb); printf("\n");
     return (0);

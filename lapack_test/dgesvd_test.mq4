@@ -74,7 +74,7 @@ int init()
     A[2 + 0 * m] = 9;    A[2 + 1 * m] = 10;   A[2 + 2 * m] = 11;   A[2 + 3 * m] = 12;
 
     printf("A =");    printmat(m, n, A, m);    printf("\n");
-    ret = mql_dgesvd(LAPACK_COL_MAJOR, 'A', 'A', m, n, A, m, S, U, m, VT, n, superb);
+    ret = mql_dgesvd('A', 'A', m, n, A, m, S, U, m, VT, n, superb);
 
     //print out some results.
     printf("#singular values\n");

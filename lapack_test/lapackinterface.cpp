@@ -34,45 +34,46 @@ either expressed or implied, of NAKATA Maho.
 #include <stdio.h>
 #include <math.h>
 
-#include <cblas.h>
+#include "blas_subset.h"
 #include <lapacke.h>
 
-//----
 #define _DLLAPI extern "C" __declspec(dllexport)
 
-_DLLAPI void __stdcall mql_dgemm(enum CBLAS_ORDER Order, enum CBLAS_TRANSPOSE TransA, enum CBLAS_TRANSPOSE TransB, int M, int N, int K, double alpha, double *A, int lda, double *B, int ldb, double beta, double *C, int ldc)
+_DLLAPI void __stdcall mql_dgemm(char TransA, char TransB, int M, int N, int K, double alpha, double *A, int lda, double *B, int ldb, double beta, double *C, int ldc)
 {
-  cblas_dgemm(Order, TransA, TransB, (blasint)M, (blasint)N, (blasint)K, alpha, A, (blasint)lda, B, (blasint)ldb, beta, C, (blasint)ldc);
+ dgemm_f77(&TransA, &TransB, &M, &N, &K, &alpha, A, &lda, B, &ldb, &beta, C, &ldc);
 }
 
 _DLLAPI double __stdcall mql_ddot(int n, double *x, int incx, double *y, int incy)
 {
-  return cblas_ddot(n, x, incx, y, incy);
+  return ddot_f77(&n, x, &incx, y, &incy);
 }
 
 _DLLAPI double __stdcall mql_dasm(int n, double *x, int incx)
 {
-  return cblas_dasum(n, x, incx);
+  return dasum_f77(&n, x, &incx);
 }
 
-_DLLAPI int __stdcall mql_dsyev(int matrix_order, char jobz, char uplo, lapack_int n, double* a, lapack_int lda, double* w)
+_DLLAPI int __stdcall mql_dsyev(char jobz, char uplo, lapack_int n, double* a, lapack_int lda, double* w)
 {
-  return LAPACKE_dsyev(matrix_order, jobz, uplo, n, a, lda, w);
+  int matrix_order=LAPACK_COL_MAJOR;
+  return LAPACKE_dsyev(matrix_order, jobz, uplo, (lapack_int)n, a, (lapack_int)lda, w);
 }
 
-_DLLAPI int __stdcall mql_dgesvd(int matrix_order, char jobu, char jobvt, lapack_int m, lapack_int n, double* a, lapack_int lda, double* s, double* u, lapack_int ldu, double* vt, lapack_int ldvt, double* superb)
+_DLLAPI int __stdcall mql_dgesvd(char jobu, char jobvt, lapack_int m, lapack_int n, double* a, lapack_int lda, double* s, double* u, lapack_int ldu, double* vt, lapack_int ldvt, double* superb)
 {
+  int matrix_order=LAPACK_COL_MAJOR;
   return LAPACKE_dgesvd(matrix_order, jobu, jobvt, (lapack_int)m, (lapack_int)n, a, (lapack_int)lda, s, u, (lapack_int)ldu, vt, (lapack_int)ldvt, superb);
 }
 
-_DLLAPI int __stdcall mql_dgesdd(int matrix_order, char jobz, int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt, int ldvt)
+_DLLAPI int __stdcall mql_dgesdd(char jobz, int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt, int ldvt)
 {
+  int matrix_order=LAPACK_COL_MAJOR;
   return LAPACKE_dgesdd(matrix_order, jobz, (lapack_int)m, (lapack_int)n, a, (lapack_int)lda, s, u, (lapack_int)ldu, vt, (lapack_int)ldvt);
 }
 
-_DLLAPI int __stdcall mql_dgels(int matrix_order, char trans, int m, int n, int nrhs, double *a, int lda, double *b, int ldb)
+_DLLAPI int __stdcall mql_dgels(char trans, int m, int n, int nrhs, double *a, int lda, double *b, int ldb)
 {
+  int matrix_order=LAPACK_COL_MAJOR;
   return LAPACKE_dgels(matrix_order, trans, (lapack_int)m, (lapack_int)n, (lapack_int) nrhs, a, (lapack_int) lda, b, (lapack_int)ldb );
 }
-
-

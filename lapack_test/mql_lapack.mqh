@@ -26,17 +26,6 @@ of the authors and should not be interpreted as representing official policies,
 either expressed or implied, of NAKATA Maho.
 */
 
-enum CBLAS_ORDER     {CblasRowMajor=101, CblasColMajor=102};
-enum CBLAS_TRANSPOSE {CblasNoTrans=111, CblasTrans=112, CblasConjTrans=113, CblasConjNoTrans=114};
-enum CBLAS_UPLO      {CblasUpper=121, CblasLower=122};
-enum CBLAS_DIAG      {CblasNonUnit=131, CblasUnit=132};
-enum CBLAS_SIDE      {CblasLeft=141, CblasRight=142};
-
-#define LAPACK_ROW_MAJOR               101
-#define LAPACK_COL_MAJOR               102
-#define LAPACK_WORK_MEMORY_ERROR       -1010
-#define LAPACK_TRANSPOSE_MEMORY_ERROR  -1011
-
 #import "lapackinterface.dll"
 double mql_ddot(int n, double &x[], int incx, double &y[], int incy);
 double mql_dasum(int n, double &x[], int incx);
@@ -50,31 +39,31 @@ void mql_drotg(double &a[], double &b[], double &c[], double &s[]);
 void mql_drotm(int N, double &X[], int incX, double &Y[], int incY, double &P[]);
 void mql_drotmg(double &d1, double &d2, double &b1, double b2, double &P);
 void mql_dscal(int N, double alpha, double &X[], int incX);
-void mql_dgemv(CBLAS_ORDER order, CBLAS_TRANSPOSE trans, int m, int n, double alpha, double &a[], int lda, double &x[], int incx, double beta, double &y[], int incy);
-void mql_dger(CBLAS_ORDER order, int M, int N, double alpha, double &X[], int incX, double &Y[], int incY, double &A[], int lda);
-void mql_dtrsv(CBLAS_ORDER order, CBLAS_UPLO Uplo, CBLAS_TRANSPOSE TransA, CBLAS_DIAG Diag, int N, double &A[], int lda, double &X[], int incX);
-void mql_dtrmv(CBLAS_ORDER order, CBLAS_UPLO Uplo, CBLAS_TRANSPOSE TransA, CBLAS_DIAG Diag, int N, double &A[], int lda, double &X[], int incX);
-void mql_dsyr(CBLAS_ORDER order, CBLAS_UPLO Uplo, int N, double alpha, double &X[], int incX, double &A[], int lda);
-void mql_dgbmv(CBLAS_ORDER order, CBLAS_TRANSPOSE TransA, int M, int N, int KL, int KU, double alpha, double &A[], int lda, double &X[], int incX, double beta, double &Y[], int incY);
-void mql_dsbmv(CBLAS_ORDER order, CBLAS_UPLO Uplo, int N, int K, double alpha, double &A, int lda, double &X[], int incX, double beta, double &Y[], int incY);
-void mql_dtbmv(CBLAS_ORDER order, CBLAS_UPLO Uplo, CBLAS_TRANSPOSE TransA, CBLAS_DIAG Diag, int N, int K, double &A[], int lda, double &X[], int incX);
-void mql_dtbsv(CBLAS_ORDER order, CBLAS_UPLO Uplo, CBLAS_TRANSPOSE TransA, CBLAS_DIAG Diag, int N, int K, double &A[], int lda, double &X[], int incX);
-void mql_dtpmv(CBLAS_ORDER order, CBLAS_UPLO Uplo, CBLAS_TRANSPOSE TransA, CBLAS_DIAG Diag, int N, double &Ap[], double &X[], int incX);
-void mql_dtpsv(CBLAS_ORDER order, CBLAS_UPLO Uplo, CBLAS_TRANSPOSE TransA, CBLAS_DIAG Diag, int N, double &Ap[], double &X[], int incX);
-void mql_dsymv(CBLAS_ORDER order, CBLAS_UPLO Uplo, int N, double alpha, double &A[], int lda, double &X[], int incX, double beta, double &Y[], int incY);
-void mql_dspmv(CBLAS_ORDER order, CBLAS_UPLO Uplo, int N, double alpha, double &Ap[], double &X[], int incX, double beta, double &Y[], int incY);
-void mql_dspr(CBLAS_ORDER order, CBLAS_UPLO Uplo, int N, double alpha, double &X, int incX, double &Ap[]); 
-void mql_dspr2(CBLAS_ORDER order, CBLAS_UPLO Uplo, int N, double alpha, double &X[], int incX, double &Y[], int incY, double &A[]);
-void mql_dgemm(CBLAS_ORDER Order, CBLAS_TRANSPOSE TransA, CBLAS_TRANSPOSE TransB, int M, int N, int K,  double alpha, double &A[], int lda, double &B[], int ldb, double beta, double &C[], int ldc);
-void mql_dsymm(CBLAS_ORDER Order, CBLAS_SIDE Side, CBLAS_UPLO Uplo, int M, int N, double alpha, double &A[], int lda, double &B[], int ldb, double beta, double &C[], int ldc);
-void mql_dsyrk(CBLAS_ORDER Order, CBLAS_UPLO Uplo, CBLAS_TRANSPOSE Trans, int N, int K, double alpha, double &A[], int lda, double beta, double &C[], int ldc);
-void mql_dsyr2k(CBLAS_ORDER Order, CBLAS_UPLO Uplo, CBLAS_TRANSPOSE Trans, int N, int K, double alpha, double &A[], int lda, double &B[], int ldb, double beta, double &C[], int ldc);
-void mql_dtrmm(CBLAS_ORDER Order, CBLAS_SIDE Side,  CBLAS_UPLO Uplo, CBLAS_TRANSPOSE TransA, CBLAS_DIAG Diag, int M, int N, double alpha, double &A[], int lda, double &B[], int ldb);
-void mql_dtrsm(CBLAS_ORDER Order, CBLAS_SIDE Side, CBLAS_UPLO Uplo, CBLAS_TRANSPOSE TransA, CBLAS_DIAG Diag, int M, int N, double alpha, double &A[], int lda, double &B[], int ldb);
+void mql_dgemv(char trans, int m, int n, double alpha, double &a[], int lda, double &x[], int incx, double beta, double &y[], int incy);
+void mql_dger(int M, int N, double alpha, double &X[], int incX, double &Y[], int incY, double &A[], int lda);
+void mql_dtrsv(char Uplo, char TransA, char Diag, int N, double &A[], int lda, double &X[], int incX);
+void mql_dtrmv(char Uplo, char TransA, char Diag, int N, double &A[], int lda, double &X[], int incX);
+void mql_dsyr(char Uplo, int N, double alpha, double &X[], int incX, double &A[], int lda);
+void mql_dgbmv(char TransA, int M, int N, int KL, int KU, double alpha, double &A[], int lda, double &X[], int incX, double beta, double &Y[], int incY);
+void mql_dsbmv(char Uplo, int N, int K, double alpha, double &A, int lda, double &X[], int incX, double beta, double &Y[], int incY);
+void mql_dtbmv(char Uplo, char TransA, char Diag, int N, int K, double &A[], int lda, double &X[], int incX);
+void mql_dtbsv(char Uplo, char TransA, char Diag, int N, int K, double &A[], int lda, double &X[], int incX);
+void mql_dtpmv(char Uplo, char TransA, char Diag, int N, double &Ap[], double &X[], int incX);
+void mql_dtpsv(char Uplo, char TransA, char Diag, int N, double &Ap[], double &X[], int incX);
+void mql_dsymv(char Uplo, int N, double alpha, double &A[], int lda, double &X[], int incX, double beta, double &Y[], int incY);
+void mql_dspmv(char Uplo, int N, double alpha, double &Ap[], double &X[], int incX, double beta, double &Y[], int incY);
+void mql_dspr(char Uplo, int N, double alpha, double &X, int incX, double &Ap[]); 
+void mql_dspr2(char Uplo, int N, double alpha, double &X[], int incX, double &Y[], int incY, double &A[]);
+void mql_dgemm(char TransA, char TransB, int M, int N, int K,  double alpha, double &A[], int lda, double &B[], int ldb, double beta, double &C[], int ldc);
+void mql_dsymm(char Side, char Uplo, int M, int N, double alpha, double &A[], int lda, double &B[], int ldb, double beta, double &C[], int ldc);
+void mql_dsyrk(char Uplo, char Trans, int N, int K, double alpha, double &A[], int lda, double beta, double &C[], int ldc);
+void mql_dsyr2k(char Uplo, char Trans, int N, int K, double alpha, double &A[], int lda, double &B[], int ldb, double beta, double &C[], int ldc);
+void mql_dtrmm(char Side, char Uplo, char TransA, char Diag, int M, int N, double alpha, double &A[], int lda, double &B[], int ldb);
+void mql_dtrsm(char Side, char Uplo, char TransA, char Diag, int M, int N, double alpha, double &A[], int lda, double &B[], int ldb);
 
-int mql_dsyev(int matrix_order, char jobz, char uplo, int n, double &a[], int lda, double &w[]);
-int mql_dgesvd(int matrix_order, char jobu, char jobvt, int m, int n, double &a[], int lda, double &s[], double &u[], int ldu, double &vt[], int ldvt, double &superb[]);
-int mql_dgesdd(int matrix_order, char jobz, int m, int n, double &a[], int lda, double &s[], double &u[], int ldu, double &vt[], int ldvt);
-int mql_dgels(int matrix_order, char trans, int m, int n, int nrhs, double &a[], int lda, double &b[], int ldb);
+int mql_dsyev(char jobz, char uplo, int n, double &a[], int lda, double &w[]);
+int mql_dgesvd(char jobu, char jobvt, int m, int n, double &a[], int lda, double &s[], double &u[], int ldu, double &vt[], int ldvt, double &superb[]);
+int mql_dgesdd(char jobz, int m, int n, double &a[], int lda, double &s[], double &u[], int ldu, double &vt[], int ldvt);
+int mql_dgels(char trans, int m, int n, int nrhs, double &a[], int lda, double &b[], int ldb);
 #import
 
