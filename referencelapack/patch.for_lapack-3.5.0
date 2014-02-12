@@ -1,6 +1,5 @@
-diff -ur lapack-3.5.0.org/INSTALL/Makefile lapack-3.5.0/INSTALL/Makefile
---- lapack-3.5.0.org/INSTALL/Makefile	2011-10-01 11:37:03.000000000 +0900
-+++ lapack-3.5.0/INSTALL/Makefile	2014-02-12 12:13:35.307548300 +0900
+--- INSTALL/Makefile	2011-10-01 11:37:03.000000000 +0900
++++ INSTALL/Makefile	2014-02-12 12:13:35.307548300 +0900
 @@ -27,7 +27,7 @@
  	$(LOADER) $(LOADOPTS) -o testversion ilaver.o LAPACK_version.o
  
@@ -10,12 +9,10 @@ diff -ur lapack-3.5.0.org/INSTALL/Makefile lapack-3.5.0/INSTALL/Makefile
  .f.o: 
  	$(FORTRAN) $(OPTS) -c $< -o $@
  
-lapack-3.5.0/INSTALLだけに発見: Makefile~
-lapack-3.5.0/lapacke/srcだけに発見: #Makefile.orig#
-lapack-3.5.0/lapacke/srcだけに発見: #o#
-diff -ur lapack-3.5.0.org/lapacke/src/Makefile lapack-3.5.0/lapacke/src/Makefile
---- lapack-3.5.0.org/lapacke/src/Makefile	2013-01-10 13:26:11.000000000 +0900
-+++ lapack-3.5.0/lapacke/src/Makefile	2014-02-12 12:44:42.401298300 +0900
+
+
+--- lapacke/src/Makefile	2013-01-10 13:26:11.000000000 +0900
++++ lapacke/src/Makefile	2014-02-12 12:44:42.401298300 +0900
 @@ -34,7 +34,7 @@
  #
  include ../../make.inc
@@ -84,6 +81,39 @@ diff -ur lapack-3.5.0.org/lapacke/src/Makefile lapack-3.5.0/lapacke/src/Makefile
  	$(RANLIB) ../../$(LAPACKELIB)
  
  .c.o:
-lapack-3.5.0/lapacke/srcだけに発見: Makefile.orig
-lapack-3.5.0/lapacke/srcだけに発見: Makefile.orig~
-lapack-3.5.0/lapacke/srcだけに発見: Makefile~
+--- make.inc.example	2014-02-12 13:54:59.995048300 +0900
++++ make.inc.example	2014-02-12 15:04:23.467704500 +0900
+@@ -13,9 +13,9 @@
+ #  desired load options for your machine.
+ #
+ FORTRAN  = gfortran 
+-OPTS     = -O2 -frecursive
++OPTS     = -O2 -mincoming-stack-boundary=2 -Wall
+ DRVOPTS  = $(OPTS)
+-NOOPT    = -O0 -frecursive
++NOOPT    = -O0 -mincoming-stack-boundary=2 -Wall
+ LOADER   = gfortran
+ LOADOPTS =
+ #
+@@ -43,7 +43,11 @@
+ # CC is the C compiler, normally invoked with options CFLAGS.
+ #
+ CC = gcc
+-CFLAGS = -O2
++CFLAGS = -O2 -mincoming-stack-boundary=2 -Wall -m32
++#
++# LAPACKE has also the interface to some routines from tmglib,
++# if LAPACKE_WITH_TMG is selected, we need to add those routines to LAPACKE
++#LAPACKE_WITH_TMG = Yes
+ #
+ #  The archiver and the flag(s) to use when building archive (library)
+ #  If you system has no ranlib, set RANLIB = echo.
+@@ -65,7 +69,7 @@
+ #  machine-specific, optimized BLAS library should be used whenever
+ #  possible.)
+ #
+-BLASLIB      = ../../librefblas.a
++BLASLIB      = ../../libblas.a
+ LAPACKLIB    = liblapack.a
+ TMGLIB       = libtmglib.a
+ LAPACKELIB   = liblapacke.a
