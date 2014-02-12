@@ -1,0 +1,89 @@
+diff -ur lapack-3.5.0.org/INSTALL/Makefile lapack-3.5.0/INSTALL/Makefile
+--- lapack-3.5.0.org/INSTALL/Makefile	2011-10-01 11:37:03.000000000 +0900
++++ lapack-3.5.0/INSTALL/Makefile	2014-02-12 12:13:35.307548300 +0900
+@@ -27,7 +27,7 @@
+ 	$(LOADER) $(LOADOPTS) -o testversion ilaver.o LAPACK_version.o
+ 
+ clean:
+-	rm -f *.o
++	rm -f *.o test*
+ .f.o: 
+ 	$(FORTRAN) $(OPTS) -c $< -o $@
+ 
+lapack-3.5.0/INSTALLだけに発見: Makefile~
+lapack-3.5.0/lapacke/srcだけに発見: #Makefile.orig#
+lapack-3.5.0/lapacke/srcだけに発見: #o#
+diff -ur lapack-3.5.0.org/lapacke/src/Makefile lapack-3.5.0/lapacke/src/Makefile
+--- lapack-3.5.0.org/lapacke/src/Makefile	2013-01-10 13:26:11.000000000 +0900
++++ lapack-3.5.0/lapacke/src/Makefile	2014-02-12 12:44:42.401298300 +0900
+@@ -34,7 +34,7 @@
+ #
+ include ../../make.inc
+ 
+-SRC_OBJ = \
++CSRC_OBJ = \
+ lapacke_cbbcsd.o \
+ lapacke_cbbcsd_work.o \
+ lapacke_cbdsqr.o \
+@@ -532,7 +532,9 @@
+ lapacke_cupgtr.o \
+ lapacke_cupgtr_work.o \
+ lapacke_cupmtr.o \
+-lapacke_cupmtr_work.o \
++lapacke_cupmtr_work.o
++
++DSRC_OBJ = \
+ lapacke_dbbcsd.o \
+ lapacke_dbbcsd_work.o \
+ lapacke_dbdsdc.o \
+@@ -1022,7 +1024,9 @@
+ lapacke_dtrttp.o \
+ lapacke_dtrttp_work.o \
+ lapacke_dtzrzf.o \
+-lapacke_dtzrzf_work.o \
++lapacke_dtzrzf_work.o
++
++SSRC_OBJ = \
+ lapacke_sbbcsd.o \
+ lapacke_sbbcsd_work.o \
+ lapacke_sbdsdc.o \
+@@ -1506,7 +1510,9 @@
+ lapacke_strttp.o \
+ lapacke_strttp_work.o \
+ lapacke_stzrzf.o \
+-lapacke_stzrzf_work.o \
++lapacke_stzrzf_work.o
++
++ZSRC_OBJ = \
+ lapacke_zbbcsd.o \
+ lapacke_zbbcsd_work.o \
+ lapacke_zbdsqr.o \
+@@ -2061,7 +2067,10 @@
+ lapacke_zlagsy.o \
+ lapacke_zlagsy_work.o
+ 
+-ALLOBJ = $(SRC_OBJ) $(MATGEN_OBJ) 
++COBJ_FILES := $(CSRC_OBJ)
++SOBJ_FILES := $(SSRC_OBJ)
++DOBJ_FILES := $(DSRC_OBJ)
++ZOBJ_FILES := $(ZSRC_OBJ)
+ 
+ ifdef USEXBLAS
+ ALLXOBJ = $(SXLASRC) $(DXLASRC) $(CXLASRC) $(ZXLASRC)
+@@ -2072,8 +2081,11 @@
+ 
+ all: ../../$(LAPACKELIB)
+ 
+-../../$(LAPACKELIB): $(ALLOBJ) $(ALLXOBJ)
+-	$(ARCH) $(ARCHFLAGS) ../../$(LAPACKELIB) $(ALLOBJ) $(ALLXOBJ)
++../../$(LAPACKELIB): $(COBJ_FILES) $(DOBJ_FILES) $(SOBJ_FILES) $(ZOBJ_FILES) $(ALLXOBJ) $(MATGEN_OBJ) 
++	$(ARCH) $(ARCHFLAGS) ../../$(LAPACKELIB) $(COBJ_FILES)
++	$(ARCH) $(ARCHFLAGS) ../../$(LAPACKELIB) $(DOBJ_FILES)
++	$(ARCH) $(ARCHFLAGS) ../../$(LAPACKELIB) $(SOBJ_FILES) $(MATGEN_OBJ)
++	$(ARCH) $(ARCHFLAGS) ../../$(LAPACKELIB) $(ZOBJ_FILES) $(ALLXOBJ)
+ 	$(RANLIB) ../../$(LAPACKELIB)
+ 
+ .c.o:
+lapack-3.5.0/lapacke/srcだけに発見: Makefile.orig
+lapack-3.5.0/lapacke/srcだけに発見: Makefile.orig~
+lapack-3.5.0/lapacke/srcだけに発見: Makefile~
