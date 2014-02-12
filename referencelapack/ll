@@ -1,0 +1,66 @@
+# On branch master
+# Your branch is ahead of 'origin/master' by 4 commits.
+#   (use "git push" to publish your local commits)
+#
+# Changes not staged for commit:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   ../openblas/go.sh
+#
+# Untracked files:
+#   (use "git add <file>..." to include in what will be committed)
+#
+#	../RCI/
+#	../RSI_Super_Indicator/
+#	../SVE_RSI_I-Fish/
+#	../SingularSpectrumAnalysis/
+#	../dctdifferentiation/1st/
+#	../dctdifferentiation/2nd/
+#	../dctsmoothing/.#Makefile
+#	../dctsmoothing/dctsmoothing.ex4
+#	../dctsmoothing/fftwinterface.a
+#	../dctsmoothing/fftwinterface.def
+#	../dctsmoothing/fftwinterface.dll
+#	../dctsmoothing/fftwinterface.o
+#	../dctsmoothing3/dctsmoothing3.ex4
+#	../dctsmoothing3/fftwinterface.a
+#	../dctsmoothing3/fftwinterface.def
+#	../dctsmoothing3/fftwinterface.dll
+#	../dctsmoothing3/fftwinterface.o
+#	../ehlersfilteroversampled/
+#	../fftw/fftw-3.3.3.tar.gz
+#	../fftw/fftw-3.3.3/
+#	../fftw/log.go.sh
+#	../filteroversampler/20131003.log
+#	../filteroversampler/Inverse Fisher Transform of RSIm.mq4
+#	../filteroversampler/LaguerreFilter.mq4
+#	../filteroversampler/SVE RSI I-Fish.mq4
+#	../filteroversampler/fftwinterface.a
+#	../filteroversampler/fftwinterface.def
+#	../filteroversampler/fftwinterface.dll
+#	../filteroversampler/fftwinterface.o
+#	../filteroversampler/filteroversampler.ex4
+#	../filteroversampler/filteroversampler.log
+#	../filteroversampler/filteroversamplerea.ex4
+#	../filteroversampler/filteroversamplerea.mq4
+#	../lapack_test/.#Mac
+#	../lapack_test/.#cblas.h
+#	../lapack_test/.#dgemm_test.mq4
+#	../magnifycandles/
+#	../metatrader4library/EAtemplate.log
+#	../metatrader4library/EAtemplate.mq4
+#	../metatrader4library/MiniScreen.ex4
+#	../metatrader4library/MiniScreen_comment.mq4
+#	../metatrader4library/TimeUtility.ex4
+#	../metatrader4library/YourExpertAdvisor.mq4
+#	../metatrader4library/a.exe
+#	../metatrader4library/test.f
+#	../metatrader4library_/
+#	../movingaverage3rdgen/
+#	../myfav/
+#	../openblas/OpenBLAS-0.2.8/
+#	../openblas/log.go.sh
+#	../openblas_test/ll
+#	ll
+no changes added to commit (use "git add" and/or "git commit -a")
