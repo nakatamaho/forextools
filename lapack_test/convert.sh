@@ -11,7 +11,6 @@ mv b a
 sed -i 's/lapack_int/int/g' a
 indent -kr -l50000 a
 sed -i '/^$/d' a
-sed -i 's/int matrix_order, //g' a
 grep -v SELECT a > b
 mv b a
 sed -i 's/LAPACKE_/mql_/g' a
@@ -329,8 +328,60 @@ sed -i 's/double \*bbnrm/double \&bbnrm/g' a
 
 sed -i 's/double \*est/double \&est/g' a
 
+cp a aa
+sed -i 's/int matrix_order, //g' a
+
 indent -kr -l50000 a
+indent -kr -l50000 aa
 sed -i '/^$/d' a
+sed -i '/^$/d' aa
 
 echo "non    :"; grep \* a | wc -l
 echo "success:"; grep -v \* a | wc -l
+
+sed -i 's/int mql_/\treturn LAPACKE_/g' aa
+sed -i 's/double mql_/\treturn LAPACKE_/g' aa
+sed -i 's/char //g' aa
+sed -i 's/int n,/(lapack_int) n,/g' aa
+sed -i 's/int m,/(lapack_int) m,/g' aa
+sed -i 's/int k,/(lapack_int) k,/g' aa
+sed -i 's/int l,/(lapack_int) l,/g' aa
+sed -i 's/int lda,/(lapack_int) lda,/g' aa
+sed -i 's/int ldab,/(lapack_int) ldab,/g' aa
+sed -i 's/int ldab)/(lapack_int) ldab)/g' aa
+sed -i 's/int ldb,/(lapack_int) ldb,/g' aa
+sed -i 's/int ldb)/(lapack_int) ldb)/g' aa
+sed -i 's/int ldc,/(lapack_int) ldc,/g' aa
+sed -i 's/int ldc)/(lapack_int) ldc)/g' aa
+sed -i 's/int ku,/(lapack_int) ku,/g' aa
+sed -i 's/int kl,/(lapack_int) kl,/g' aa
+sed -i 's/int ldu,/(lapack_int) ldu,/g' aa
+sed -i 's/int ldv,/(lapack_int) ldv,/g' aa
+sed -i 's/int ldvt,/(lapack_int) ldvt,/g' aa
+sed -i 's/int ldt,/(lapack_int) ldt,/g' aa
+sed -i 's/int ldt)/(lapack_int) ldt)/g' aa
+sed -i 's/int ldq,/(lapack_int) ldq,/g' aa
+sed -i 's/int matrix_order,/LAPACK_COL_MAJOR,/g' aa
+sed -i 's/double \&a\[\]/a/g' aa
+sed -i 's/double \&ab\[\]/ab/g' aa
+sed -i 's/double \&b\[\]/b/g' aa
+sed -i 's/double \&c\[\]/c/g' aa
+sed -i 's/double \&d\[\]/d/g' aa
+sed -i 's/double \&e\[\]/e/g' aa
+sed -i 's/double \&u\[\]/u/g' aa
+sed -i 's/double \&q\[\]/q/g' aa
+sed -i 's/double \&v\[\]/v/g' aa
+sed -i 's/double \&vt\[\]/vt/g' aa
+sed -i 's/double \&t\[\]/t/g' aa
+sed -i 's/double \&x\[\]/x/g' aa
+sed -i 's/double \&ap\[\]/ap/g' aa
+sed -i 's/double \&//g' aa
+sed -i 's/int \&//g' aa
+sed -i 's/int /(lapack_int) /g' aa
+sed -i 's/\[\]//g' aa
+
+sed -i 's/;/;\n/g'  aa
+
+sed -i 's/^int/_DLLAPI int __stdcall/g' a 
+sed -i 's/^double/_DLLAPI double __stdcall/g' a
+sed -i 's/;/\n{\n}\n/g'  a
