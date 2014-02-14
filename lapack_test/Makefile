@@ -20,13 +20,14 @@ INDICATORs      = $(INDICATORs_SRC:%.mq4=%.ex4)
 LAPACKINTERFACE = lapackinterface
 
 .SUFFIXES: .mq4 .ex4
-.mq4.ex4: mql_lapack.mqh
+.mq4.ex4:
 	unix2dos < $< > $<_
 	$(MT4DIR0)/mql.exe /mql4 $<_
 	rm $<_
 
 all: $(INDICATORs) $(LAPACKINTERFACE).dll
 
+$(INDICATORs_SRC):	mql_lapack.mqh
 mql_lapack.mqh: ../lapackinterface/mql_lapack.mqh
 	cp ../lapackinterface/mql_lapack.mqh .
 
@@ -49,4 +50,4 @@ install:
 	) ;\
 	done
 clean:
-	rm -f *~ $(LAPACKINTERFACE).def $(LAPACKINTERFACE).a *.o *.log \#* *_ $(LAPACKINTERFACE).dll $(INDICATORs) ll
+	rm -f *~ $(LAPACKINTERFACE).def $(LAPACKINTERFACE).a *.o *.log \#* *_ $(LAPACKINTERFACE).dll $(INDICATORs) ll mql_lapack.mqh
