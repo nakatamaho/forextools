@@ -27,8 +27,11 @@ LAPACKINTERFACE = lapackinterface
 
 all: $(INDICATORs) $(LAPACKINTERFACE).dll
 
-$(LAPACKINTERFACE).dll: $(LAPACKINTERFACE).cpp
-	$(CXX) -I$(MSYSHOME)/local/include -O2 -shared -c $(LAPACKINTERFACE).cpp
+mql_lapack.mqh: ../lapackinterface/mql_lapack.mqh
+	cp ../lapackinterface/mql_lapack.mqh .
+
+$(LAPACKINTERFACE).dll: ../lapackinterface/$(LAPACKINTERFACE).cpp
+	$(CXX) -I$(MSYSHOME)/local/include -O2 -shared -c ../lapackinterface/$(LAPACKINTERFACE).cpp
 	$(CXX) -shared -o $(LAPACKINTERFACE).dll $(LAPACKINTERFACE).o -Wl,--kill-at,--output-def,$(LAPACKINTERFACE).def,--out-implib,$(LAPACKINTERFACE).a $(LAPACKLIB) $(STATICALIZER)
 	#objdump.exe -p $(LAPACKINTERFACE).dll | grep "\.dll"
 
