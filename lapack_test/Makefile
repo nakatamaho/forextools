@@ -17,7 +17,7 @@ MT4LIBRARYDIR   = MQL4/Libraries
 LAPACKLIB       = $(MSYSHOME)/local/lib/libopenblas.a
 #LAPACKLIB       = $(MSYSHOME)/local/lib/liblapacke.a $(MSYSHOME)/local/lib/liblapack.a $(MSYSHOME)/local/lib/libblas.a
 STATICALIZER    = -static -lgfortran -static-libgfortran -static-libgcc
-INDICATORs_SRC  = dgemm_test.mq4 dsyev_test.mq4 dgesvd_test.mq4 dgesdd_test.mq4 dgels_test.mq4 ddot_test.mq4 idamax_test.mq4
+INDICATORs_SRC  = dgemm_test.mq4 dsyev_test.mq4 dgesvd_test.mq4 dgesdd_test.mq4 dgels_test.mq4 ddot_test.mq4 idamax_test.mq4 dasum_test.mq4
 INDICATORs      = $(INDICATORs_SRC:%.mq4=%.ex4)
 LAPACKINTERFACE = lapackinterface
 
