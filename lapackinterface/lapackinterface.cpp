@@ -44,6 +44,11 @@ _DLLAPI double __stdcall mql_dasm(int n, double *x, int incx)
     return dasum_f77(&n, x, &incx);
 }
 
+_DLLAPI int __stdcall mql_idamax(int n, double *x, int incx)
+{
+    return idamax_f77(&n, x, &incx);
+}
+
 _DLLAPI void __stdcall mql_daxpy(int n, double da, double *dx, int incx, double *dy, int incy)
 {
     daxpy_f77(&n, &da, dx, &incx, dy, &incy);
@@ -205,11 +210,6 @@ _DLLAPI void __stdcall mql_dtrsm(char side, char uplo, char transa, char diag, i
 _DLLAPI void __stdcall mql_dtrsv(char uplo, char trans, char diag, int n, double *a, int lda, double *x, int incx)
 {
     dtrsv_f77(&uplo, &trans, &diag, &n, a, &lda, x, &incx);
-}
-
-_DLLAPI void __stdcall mql_idamax(int n, double *dx, int incx)
-{
-    idamax_f77(&n, dx, &incx);
 }
 
 _DLLAPI int __stdcall mql_dbdsdc(char uplo, char compq, int n, double *d, double *e, double *u, int ldu, double *vt, int ldvt, double *q, int *iq)
@@ -565,10 +565,12 @@ _DLLAPI int __stdcall mql_dhseqr(char job, char compz, int n, int ilo, int ihi, 
     return LAPACKE_dhseqr(LAPACK_COL_MAJOR, job, compz, (lapack_int) n, (lapack_int) ilo, (lapack_int) ihi, h, (lapack_int) ldh, wr, wi, z, (lapack_int) ldz);
 }
 
+/*
 _DLLAPI int __stdcall mql_dlacn2(int n, double *v, double *x, int *isgn, double *est, int *kase, int *isave)
 {
     return LAPACKE_dlacn2((lapack_int) n, v, x, isgn, est, kase, isave);
 }
+*/
 
 _DLLAPI int __stdcall mql_dlacpy(char uplo, int m, int n, double *a, int lda, double *b, int ldb)
 {
@@ -1434,7 +1436,9 @@ _DLLAPI int __stdcall mql_dtprfb(char side, char trans, char direct, char storev
     return LAPACKE_dtprfb(LAPACK_COL_MAJOR, side, trans, direct, storev, (lapack_int) m, (lapack_int) n, (lapack_int) k, (lapack_int) l, v, (lapack_int) ldv, t, (lapack_int) ldt, a, (lapack_int) lda, b, (lapack_int) ldb);
 }
 
+/*
 _DLLAPI int __stdcall mql_dsysv_rook(char uplo, int n, int nrhs, double *a, int lda, int *ipiv, double *b, int ldb)
 {
     return LAPACKE_dsysv_rook(LAPACK_COL_MAJOR, uplo, (lapack_int) n, (lapack_int) nrhs, a, (lapack_int) lda, ipiv, b, (lapack_int) ldb);
 }
+*/

@@ -29,6 +29,7 @@ either expressed or implied, of NAKATA Maho.
 #import "lapackinterface.dll"
 double mql_ddot(int n, double &x[], int incx, double &y[], int incy);
 double mql_dasum(int n, double &x[], int incx);
+int mql_idamax(int n, double &x[], int incx);
 double mql_dnrm2(int N, double &X[], int incX);
 double mql_dznrm2(int N, double &X[], int incX);
 void mql_daxpy(int n, double alpha, double &x[], int incx, double &y[], int incy);
