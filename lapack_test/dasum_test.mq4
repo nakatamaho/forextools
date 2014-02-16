@@ -59,7 +59,7 @@ int init()
     printf("x =");    printvec(n, x);    printf("\n");
 
     dasum_ret = mql_dasum(n, x, 1);
-    printf("ans = %d", dasum_ret);  
+    printf("ans = %f", dasum_ret);  
     return (0);
 }
 
