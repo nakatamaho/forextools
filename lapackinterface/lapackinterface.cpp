@@ -39,7 +39,7 @@ either expressed or implied, of NAKATA Maho.
 
 #define _DLLAPI extern "C" __declspec(dllexport)
 
-_DLLAPI double __stdcall mql_dasm(int n, double *x, int incx)
+_DLLAPI double __stdcall mql_dasum(int n, double *x, int incx)
 {
     return dasum_f77(&n, x, &incx);
 }
