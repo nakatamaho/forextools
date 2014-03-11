@@ -39,11 +39,14 @@ either expressed or implied, of NAKATA Maho.
 
 #import "libSSA4FX.dll"
 void BasicSSA(double &x[], int N, int L, int Rmax, double &xtilde[]);
+void BasicSSA_2(double &x[], int N, int L, double threshold, double &xtilde[]);
 #import
 
 input int ArrayLength = 300;
 input int WindowLength = 30;
 input int Rmax = 3;
+input double threshold = 2.0;
+input int SSAMethod = 1;
 
 double SSABuffer[];
 double ExtBuffer[];
@@ -82,7 +85,10 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 	PriceBuffer[i] = close[i];
     }
 
-    BasicSSA(PriceBuffer, ArrayLength, WindowLength, Rmax, SSABuffer);
+    if (SSAMethod)
+	BasicSSA(PriceBuffer, ArrayLength, WindowLength, Rmax, SSABuffer);
+    else
+	BasicSSA_2(PriceBuffer, ArrayLength, WindowLength, threshold, SSABuffer);
 
     for (i = ArrayLength - 1; i >= 0; i--) {
 	ExtBuffer[i] = SSABuffer[i];

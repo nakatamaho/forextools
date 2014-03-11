@@ -20,7 +20,7 @@ MT4EXPERTDIR    = MQL4/Experts
 MT4INDICATORDIR = MQL4/Indicators
 MT4LIBRARYDIR   = MQL4/Libraries
 
-INDICATORs_SRC  = BasicSSA.mq4
+INDICATORs_SRC  = BasicSSA.mq4 CasualSSA.mq4
 INDICATORs      = $(INDICATORs_SRC:%.mq4=%.ex4)
 LIBSSA		= libSSA4FX
 LAPACKLIB       = $(MSYSHOME)/local/lib/liblapacke.a $(MSYSHOME)/local/lib/liblapack.a $(MSYSHOME)/local/lib/libblas.a -lgfortran

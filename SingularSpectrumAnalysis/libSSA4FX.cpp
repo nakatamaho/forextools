@@ -50,6 +50,7 @@ either expressed or implied, of NAKATA Maho.
 #define _DLLAPI extern "C" __declspec(dllexport)
 
 _DLLAPI void __stdcall BasicSSA(double *x, int N, int L, int Rmax, double *xtilde);
+_DLLAPI void __stdcall BasicSSA_2(double *x, int N, int L, double threshold, double *xtilde);
 
 // Do Basic Singular Spectrum Analysis for a time series.
 // x is real-valued time series (x_1, x_2, \cdots, x_N) of length N.
@@ -79,14 +80,84 @@ _DLLAPI void __stdcall BasicSSA(double *x, int N, int L, int Rmax, double *xtild
     // Do singular value decomposition of trajectory matrix.
     // implicitly correspond to [eq. (2.2)]
     ret = LAPACKE_dgesdd(LAPACK_COL_MAJOR, 'A', L, K, X, L, S, U, L, VT, K);
-    trace = 0.0;
 
-/*
+    // Reconstruction using eigentriples
+    // (\lambda_i, Ui, V_i), 1 <= i <= R
+    for (q = 1; q <= K; q++) {
+	for (p = 1; p <= L; p++) {
+	    rtmp = 0.0;
+	    for (i = 1; i <= Rmax; i++) {
+		rtmp = rtmp + U[(p - 1) + (i - 1) * ldu] * S[i - 1] * VT[(i - 1) + (q - 1) * ldvt];
+	    }
+	    Ystar[(p - 1) + (q - 1) * ldystar] = rtmp;
+	}
+    }
+
+    // Hankelization (or diagonal averaging) [eq. (2.4)]
+    for (k = 1; k <= L; k++) {
+	rtmp = 0.0;
+	for (j = 1; j <= k; j++) {
+	    rtmp = rtmp + Ystar[j - 1 + (k - j) * ldystar];
+	}
+	xtilde[k - 1] = rtmp / double (k);
+    }
+    for (k = L; k < K; k++) {
+	rtmp = 0.0;
+	for (j = 1; j <= L; j++) {
+	    rtmp = rtmp + Ystar[j - 1 + (k - j) * ldystar];
+	}
+	xtilde[k - 1] = rtmp / double (L);
+    }
+    for (k = K; k <= N; k++) {
+	rtmp = 0.0;
+	for (j = k - K + 1; j <= L; j++) {
+	    rtmp = rtmp + Ystar[j - 1 + (k - j) * ldystar];
+	}
+	xtilde[k - 1] = rtmp / double (N - k + 1);
+    }
+
+    delete[]S;
+    delete[]VT;
+    delete[]U;
+    delete[]Ystar;
+    delete[]X;
+}
+
+// Do Basic Singular Spectrum Analysis for a time series.
+// Maxmium number of singular vaule is determined by thershold,
+// 90% of trace -> 1, 99% of trace -> 2, 99.9%  of trace -> 3 etc.
+_DLLAPI void __stdcall BasicSSA_2(double *x, int N, int L, double threshold, double *xtilde)
+{
+    int K = N - L + 1;
+    int i, j, k;
+    int p, q;
+    int Rmax;
+    double *X = new double[L * K];
+    double *Ystar = new double[L * K];
+    double *U = new double[L * L];
+    double *VT = new double[K * K];
+    double *S = new double[L];
+    double rtmp, trace;
+    int ldx = L, ldystar = L, ldxt = K, ldu = L, ldvt = K, ret;
+
+    //construct L-trajectory matrix [eq. (2.1)]
+    for (j = 1; j <= K; j++) {
+	for (i = 1; i <= L; i++) {
+	    X[(i - 1) + (j - 1) * ldx] = x[(i - 1) + (j - 1)];
+	}
+    }
+
+    // Do singular value decomposition of trajectory matrix.
+    // implicitly correspond to [eq. (2.2)]
+    ret = LAPACKE_dgesdd(LAPACK_COL_MAJOR, 'A', L, K, X, L, S, U, L, VT, K);
+
     // LAPACK dgesdd (dgesvd) calculates its singular values in descending order
-    // and determine Lmax which eigentriples to be concerned by threadshold.
+    // and determine Rmax which eigentriples to be concerned by threadshold.
     // (\lambda_i, Ui, V_i), 1 <= i <= rank
     // implicitly correspond to [eq. (2.3)]
-    for (i = 1; i <= L; i++) trace = trace + S[i - 1];
+    trace = 0.0;
+    for (i = 1; i <= L; i++)
+	trace = trace + S[i - 1];
     trace = trace * (1.0 - pow(10.0, -threshold));
     rtmp = 0.0;
     for (i = 1; i <= L; i++) {
@@ -95,10 +166,9 @@ _DLLAPI void __stdcall BasicSSA(double *x, int N, int L, int Rmax, double *xtild
 	if (rtmp > trace)
 	    break;
     }
-*/
 
     // Reconstruction using eigentriples
-    // (\lambda_i, Ui, V_i), 1 <= i <= R
+    // (\lambda_i, Ui, V_i), 1 <= i <= Rmax
     for (q = 1; q <= K; q++) {
 	for (p = 1; p <= L; p++) {
 	    rtmp = 0.0;
