@@ -119,7 +119,7 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 	ExtBuffer[i] = SSABuffer[0];
     }
 
-    for (i = ArrayLength - 1; i >= 0; i--) {
+    for (i = 0; i <= ArrayLength; i++) {
 	if (ExtBuffer[i] >= ExtBuffer[i + 1]) {
 	    UpLine[i] = ExtBuffer[i];
 	    DnLine[i] = EMPTY_VALUE;
