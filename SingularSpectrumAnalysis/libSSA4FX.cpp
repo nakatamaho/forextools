@@ -228,35 +228,26 @@ void FastSSAMatVecMult(double *F, double *v, double *p, int N, int L)
     double *w = new double[N];
     double *pp = new double[N];
     std::complex <double> *ctilde, *wtilde, *ptilde;
-    int i, j;
-    int K = N - L + 1;
-
-    for (i = N - L + 1; i <= N; i++) {
-        c[i - (N - L + 1)] = F[i - 1];
-    }
-    for (i = 1; i <= N - L; i++) {
-        c[i + (L - 1)] = F[i - 1];
-    }
-    printf("c = ");    printmat(1, N, c, 1);    printf("\n");
-
-    for (i = 1; i <= N; i++) w[i - 1] = 0.0;
-    for (i = N - L + 1, j = 1; i >= 1; i--, j++) {
-	w[j - 1] = v[i - 1];
-    }
-
     ctilde = (std::complex <double>*) fftw_malloc(sizeof(std::complex <double>) * N);
     wtilde = (std::complex <double>*) fftw_malloc(sizeof(std::complex <double>) * N);
     ptilde = (std::complex <double>*) fftw_malloc(sizeof(std::complex <double>) * N);
+    int i, j;
+    int K = N - L + 1;
 
-    fftw_plan x = fftw_plan_dft_r2c_1d(N, c, reinterpret_cast <fftw_complex*>(ctilde), FFTW_ESTIMATE);
-    fftw_plan y = fftw_plan_dft_r2c_1d(N, w, reinterpret_cast <fftw_complex*>(wtilde), FFTW_ESTIMATE);
+    for (i = N - L + 1; i <= N; i++) c[i - (N - L + 1)] = F[i - 1];
+    for (i = 1; i <= N - L; i++) c[i + (L - 1)] = F[i - 1];
+    for (i = 1; i <= N; i++) w[i - 1] = 0.0;
+    for (i = N - L + 1, j = 1; i >= 1; i--, j++) w[j - 1] = v[i - 1];
+
+    fftw_plan x = fftw_plan_dft_r2c_1d(N, c, reinterpret_cast <fftw_complex *>(ctilde), FFTW_ESTIMATE);
+    fftw_plan y = fftw_plan_dft_r2c_1d(N, w, reinterpret_cast <fftw_complex *>(wtilde), FFTW_ESTIMATE);
     fftw_execute(x);
     fftw_execute(y);
     for (i = 1; i <= N; i++) ptilde[i - 1] = ctilde[i - 1] * wtilde[i - 1];
-    fftw_plan z = fftw_plan_dft_c2r_1d(N, reinterpret_cast <fftw_complex*>(ptilde), pp, FFTW_ESTIMATE);
+    fftw_plan z = fftw_plan_dft_c2r_1d(N, reinterpret_cast <fftw_complex *>(ptilde), pp, FFTW_ESTIMATE);
     fftw_execute(z);
     for (i = 1; i <= L; i++) p[i - 1] = pp[i - 1] / N;
-    
+
     fftw_destroy_plan(z);
     fftw_destroy_plan(y);
     fftw_destroy_plan(x);
@@ -274,24 +265,16 @@ void FastSSAMatTransVecMult(double *F, double *v, double *p, int N, int L)
     double *w = new double[N];
     double *pp = new double[N];
     std::complex <double>*ctilde, *wtilde, *ptilde;
-    int i, j;
-    int K = N - L + 1;
-
-    for (i = N - L + 1; i <= N; i++) {
-        c[i - (N - L) - 1] = F[i - 1];
-    }
-    for (i = 1; i <= N - L; i++) {
-	c[i + L - 1] = F[i - 1];
-    }
-
-    for (i = 1; i <= N - L; i++) w[i - 1] = 0.0;
-    for (i = N - L + 1, j = L; i <= N; i++, j--) {
-	w[i - 1] = v[j - 1];
-    }
-
     ctilde = (std::complex <double>*) fftw_malloc(sizeof(std::complex <double>) * N);
     wtilde = (std::complex <double>*) fftw_malloc(sizeof(std::complex <double>) * N);
     ptilde = (std::complex <double>*) fftw_malloc(sizeof(std::complex <double>) * N);
+    int i, j;
+    int K = N - L + 1;
+
+    for (i = N - L + 1; i <= N; i++) c[i - (N - L) - 1] = F[i - 1];
+    for (i = 1; i <= N - L; i++) c[i + L - 1] = F[i - 1];
+    for (i = 1; i <= N - L; i++) w[i - 1] = 0.0;
+    for (i = N - L + 1, j = L; i <= N; i++, j--) w[i - 1] = v[j - 1];
 
     fftw_plan x = fftw_plan_dft_r2c_1d(N, c, reinterpret_cast <fftw_complex *>(ctilde), FFTW_ESTIMATE);
     fftw_plan y = fftw_plan_dft_r2c_1d(N, w, reinterpret_cast <fftw_complex *>(wtilde), FFTW_ESTIMATE);
