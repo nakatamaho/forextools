@@ -24,6 +24,7 @@ INDICATORs_SRC  = BasicSSA.mq4 CasualSSA.mq4
 INDICATORs      = $(INDICATORs_SRC:%.mq4=%.ex4)
 LIBSSA		= libSSA4FX
 LAPACKLIB       = $(MSYSHOME)/local/lib/liblapacke.a $(MSYSHOME)/local/lib/liblapack.a $(MSYSHOME)/local/lib/libblas.a -lgfortran
+FFTWLIB         = -L$(MSYSHOME)/local/lib -Wl,-Bstatic -lfftw3 -lm
 STATICALIZER    = -static -lgfortran -static-libgfortran -static-libgcc
 
 .SUFFIXES: .mq4 .ex4
@@ -36,7 +37,7 @@ all: $(INDICATORs) $(LIBSSA).dll
 
 $(LIBSSA).dll: $(LIBSSA).cpp
 	$(CXX) -I$(MSYSHOME)/local/include -O2 -shared -c $(LIBSSA).cpp
-	$(CXX) -shared -o $(LIBSSA).dll $(LIBSSA).o $(LAPACKLIB) $(STATICALIZER) -Wl,--kill-at,--output-def,$(LIBSSA).def,--out-implib,$(LIBSSA).a
+	$(CXX) -shared -o $(LIBSSA).dll $(LIBSSA).o $(LAPACKLIB) $(FFTWLIB) $(STATICALIZER) -Wl,--kill-at,--output-def,$(LIBSSA).def,--out-implib,$(LIBSSA).a
 	objdump.exe -p $(LIBSSA).dll | grep "\.dll"
 
 install:

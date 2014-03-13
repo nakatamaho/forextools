@@ -45,6 +45,8 @@ either expressed or implied, of NAKATA Maho.
 #include <stdio.h>
 #include <math.h>
 
+#include <complex>
+#include <fftw3.h>
 #include <lapacke.h>
 
 #define _DLLAPI extern "C" __declspec(dllexport)
@@ -207,4 +209,116 @@ _DLLAPI void __stdcall BasicSSA_2(double *x, int N, int L, double threshold, dou
     delete[]U;
     delete[]Ystar;
     delete[]X;
+}
+
+void Embedding(double *F, double *X, int N, int L, int ldx)
+{
+    int i, j;
+    int K = N - L + 1;
+    for (j = 1; j <= K; j++) {
+	for (i = 1; i <= L; i++) {
+	    X[(i - 1) + (j - 1) * ldx] = F[(i - 1) + (j - 1)];
+	}
+    }
+}
+
+void FastSSAMatTransVecMult(double *F, double *v, double *p, int N, int L)
+{
+    double *c = new double[N];
+    double *w = new double[N];
+    double *pp = new double[N];
+    std::complex <double>*ctilde, *wtilde, *ptilde;
+    int i, j;
+    int K = N - L + 1;
+
+    j = 1; 
+    for (i = N - L + 1; i <= N; i++) {
+	c[j - 1] = F[i - 1];
+	j++;
+    }
+    for (i = 1; i <= N - L; i++) {
+	c[j - 1] = F[i - 1];
+	j++;
+    }
+    for (i = 1; i <= N - L; i++)
+	w[i - 1] = 0.0;
+    j = L;
+    for (i = N - L + 1; i <= N; i++) {
+	w[i - 1] = v[j - 1];
+	j--;
+    }
+
+    ctilde = (std::complex <double>*) fftw_malloc(sizeof(std::complex <double>) * N);
+    wtilde = (std::complex <double>*) fftw_malloc(sizeof(std::complex <double>) * N);
+    ptilde = (std::complex <double>*) fftw_malloc(sizeof(std::complex <double>) * N);
+
+    fftw_plan x = fftw_plan_dft_r2c_1d(N, c, reinterpret_cast <fftw_complex *>(ctilde), FFTW_ESTIMATE);
+    fftw_plan y = fftw_plan_dft_r2c_1d(N, w, reinterpret_cast <fftw_complex *>(wtilde), FFTW_ESTIMATE);
+    fftw_execute(x);
+    fftw_execute(y);
+    for (i = 1; i <= N; i++) ptilde[i - 1] = ctilde[i - 1] * wtilde[i - 1];
+    fftw_plan z = fftw_plan_dft_c2r_1d(N, reinterpret_cast <fftw_complex *>(ptilde), pp, FFTW_ESTIMATE);
+    fftw_execute(z);
+
+    for (i = 1; i <= K; i++) p[i - 1] = pp[i + L - 2] / N;
+
+    fftw_destroy_plan(z);
+    fftw_destroy_plan(y);
+    fftw_destroy_plan(x);
+    fftw_free(ptilde);
+    fftw_free(wtilde);
+    fftw_free(ctilde);
+
+    delete[]pp;
+    delete[]w;
+    delete[]c;
+}
+
+void FastSSAMatVecMult(double *F, double *v, double *p, int N, int L)
+{
+    double *c = new double[N];
+    double *w = new double[N];
+    double *pp = new double[N];
+    std::complex <double> *ctilde, *wtilde, *ptilde;
+    int i, j = 1;
+    int K = N - L + 1;
+
+    for (i = N - L + 1; i <= N; i++) {
+	c[j - 1] = F[i - 1];
+	j++;
+    }
+    for (i = 1; i <= N - L; i++) {
+	c[j - 1] = F[i - 1];
+	j++;
+    }
+    for (i = 1; i <= N; i++)
+	w[i - 1] = 0.0;
+    j = 1;
+    for (i = N - L + 1; i >= 1; i--) {
+	w[j - 1] = v[i - 1];
+	j++;
+    }
+
+    ctilde = (std::complex <double>*) fftw_malloc(sizeof(std::complex <double>) * N);
+    wtilde = (std::complex <double>*) fftw_malloc(sizeof(std::complex <double>) * N);
+    ptilde = (std::complex <double>*) fftw_malloc(sizeof(std::complex <double>) * N);
+
+    fftw_plan x = fftw_plan_dft_r2c_1d(N, c, reinterpret_cast <fftw_complex*>(ctilde), FFTW_ESTIMATE);
+    fftw_plan y = fftw_plan_dft_r2c_1d(N, w, reinterpret_cast <fftw_complex*>(wtilde), FFTW_ESTIMATE);
+    fftw_execute(x);
+    fftw_execute(y);
+    for (i = 1; i <= N; i++) ptilde[i - 1] = ctilde[i - 1] * wtilde[i - 1];
+    fftw_plan z = fftw_plan_dft_c2r_1d(N, reinterpret_cast <fftw_complex*>(ptilde), pp, FFTW_ESTIMATE);
+    fftw_execute(z);
+    for (i = 1; i <= L; i++) p[i - 1] = pp[i-1] / N;
+
+    fftw_destroy_plan(z);
+    fftw_destroy_plan(y);
+    fftw_destroy_plan(x);
+    fftw_free(ptilde);
+    fftw_free(wtilde);
+    fftw_free(ctilde);
+    delete[]pp;
+    delete[]w;
+    delete[]c;
 }
