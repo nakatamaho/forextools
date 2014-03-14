@@ -297,3 +297,47 @@ void FastSSAMatTransVecMult(double *F, double *v, double *p, int N, int L)
     delete[]w;
     delete[]c;
 }
+
+void RankOneHankelization(double *u, int L, double *v, int K, double sigma, double *g, int N)
+{
+    double *utilde = new double[N];
+    double *vtilde = new double[N];
+    double *w = new double[N];
+    double *gprime = new double[N];
+
+    std::complex <double>*uhat, *vhat, *ghat;
+    uhat = (std::complex <double>*) fftw_malloc(sizeof(std::complex <double>) * N);
+    vhat = (std::complex <double>*) fftw_malloc(sizeof(std::complex <double>) * N);
+    ghat = (std::complex <double>*) fftw_malloc(sizeof(std::complex <double>) * N);
+    int i, j;
+
+    for (i = 1; i <= L; i++)	 utilde[i - 1] = u[i - 1];
+    for (i = L + 1; i <= N; i++) utilde[i - 1] = 0.0;
+    for (i = 1; i <= K; i++)  	 vtilde[i - 1] = v[i - 1];
+    for (i = K + 1; i <= N; i++) vtilde[i - 1] = 0.0;
+
+    fftw_plan x = fftw_plan_dft_r2c_1d(N, utilde, reinterpret_cast <fftw_complex *>(uhat), FFTW_ESTIMATE);
+    fftw_plan y = fftw_plan_dft_r2c_1d(N, vtilde, reinterpret_cast <fftw_complex *>(vhat), FFTW_ESTIMATE);
+    fftw_execute(x);
+    fftw_execute(y);
+    for (i = 1; i <= N; i++) ghat[i - 1] = vhat[i - 1] * uhat[i - 1] / double (N);
+    fftw_plan z = fftw_plan_dft_c2r_1d(N, reinterpret_cast <fftw_complex *>(ghat), gprime, FFTW_ESTIMATE);
+    fftw_execute(z);
+
+    for (i = 1; i <= L; i++)                     w[i - 1] = 1.0 / double (i);
+    for (i = L + 1; i <= N - L; i++)             w[i - 1] = 1.0 / double (L);
+    for (i = N - L + 1, j = L; i <= N; i++, j--) w[i - 1] = 1.0 / double (j);
+    for (i = 1; i <= N; i++) g[i - 1] = sigma * w[i - 1] * gprime[i - 1];
+
+    fftw_destroy_plan(z);
+    fftw_destroy_plan(y);
+    fftw_destroy_plan(x);
+    fftw_free(ghat);
+    fftw_free(vhat);
+    fftw_free(uhat);
+
+    delete[]gprime;
+    delete[]w;
+    delete[]vtilde;
+    delete[]utilde;
+}
