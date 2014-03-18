@@ -344,9 +344,9 @@ void RankOneHankelization(double *u, int L, double *v, int K, double sigma, doub
 void Bidiagonalization(double *X, int N, int ldx, double *U, int L, int ldu, double *V, int K, int ldv, double *alpha, double *beta)
 {
     double *p = new double[L];
-    double *v0 = new double[K];
     double *r = new double[K];
     double _a = 1.0, _b = 0.0;
+    double rtmp;
     int i, j, k;
 
     for (i = 0; i < L * L; i++)	U[i] = 0.0;
@@ -359,15 +359,21 @@ void Bidiagonalization(double *X, int N, int ldx, double *U, int L, int ldu, dou
     for (i = 1; i <= K; i++) v0[i - 1] = 0.0;
     for (j = 1; j <= L; j++) {
 	cblas_dgemv(CblasColMajor, CblasTrans, L, K, _a, X, ldx, &U[(j - 1) * ldu], 1, _b, r, 1);
-	if (j == 1) cblas_daxpy(K, -beta[j - 1], v0, 1, r, 1);
+	if (j == 1) cblas_daxpy(K, -beta[j - 1], V, 1, r, 1); //actually zero vector should be input.
 	else        cblas_daxpy(K, -beta[j - 1], &V[(j - 2) * ldv], 1, r, 1);
 	alpha[j - 1] = cblas_dnrm2(K, r, 1);
-	for (k = 1; k <= K; k++) V[(j - 1) * ldv + (k - 1)] = r[k - 1] / alpha[j - 1];
+	rtmp = 1.0 / alpha[j - 1];
+	cblas_dcopy(K, r, 1, &V[(j - 1) * ldv], 1);
+	cblas_dscal(K, rtmp, &V[(j - 1) * ldv], 1);
 	cblas_dgemv(CblasColMajor, CblasNoTrans, L, K, _a, X, ldx, &V[(j - 1) * ldv], 1, _b, p, 1);
 	cblas_daxpy(L, -alpha[j - 1], &U[(j - 1) * ldu], 1, p, 1);
 	beta[j] = cblas_dnrm2(L, p, 1);
-	for (k = 1; k <= L; k++) U[j * ldu + (k - 1)] = p[k - 1] / beta[j];
+	rtmp = 1.0 / beta[j];
+	cblas_dcopy(L, p, 1, &U[j * ldu], 1);
+	cblas_dscal(L, rtmp, &U[j * ldu], 1);
     }
+    delete []p;
+    delete []r;
 }
 
 void Hankelization(double *Y, int ldy, int N, int L, double *ytilde)
