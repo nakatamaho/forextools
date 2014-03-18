@@ -69,8 +69,8 @@ _DLLAPI void __stdcall BasicSSA(double *x, int N, int L, int Rmax, double *xtild
     double *U = new double[L * L];
     double *VT = new double[K * K];
     double *S = new double[L];
-    double rtmp, trace;
-    int ldx = L, ldystar = L, ldxt = K, ldu = L, ldvt = K, ret;
+    double rtmp;
+    int ldx = L, ldystar = L, ldu = L, ldvt = K;
 
     //construct L-trajectory matrix [eq. (2.1)]
     for (j = 1; j <= K; j++) {
@@ -81,7 +81,7 @@ _DLLAPI void __stdcall BasicSSA(double *x, int N, int L, int Rmax, double *xtild
 
     // Do singular value decomposition of trajectory matrix.
     // implicitly correspond to [eq. (2.2)]
-    ret = LAPACKE_dgesdd(LAPACK_COL_MAJOR, 'A', L, K, X, L, S, U, L, VT, K);
+    LAPACKE_dgesdd(LAPACK_COL_MAJOR, 'A', L, K, X, L, S, U, L, VT, K);
 
     // Reconstruction using eigentriples
     // (\lambda_i, Ui, V_i), 1 <= i <= R
@@ -140,7 +140,7 @@ _DLLAPI void __stdcall BasicSSA_2(double *x, int N, int L, double threshold, dou
     double *VT = new double[K * K];
     double *S = new double[L];
     double rtmp, trace;
-    int ldx = L, ldystar = L, ldxt = K, ldu = L, ldvt = K, ret;
+    int ldx = L, ldystar = L, ldu = L, ldvt = K;
 
     //construct L-trajectory matrix [eq. (2.1)]
     for (j = 1; j <= K; j++) {
@@ -151,7 +151,7 @@ _DLLAPI void __stdcall BasicSSA_2(double *x, int N, int L, double threshold, dou
 
     // Do singular value decomposition of trajectory matrix.
     // implicitly correspond to [eq. (2.2)]
-    ret = LAPACKE_dgesdd(LAPACK_COL_MAJOR, 'A', L, K, X, L, S, U, L, VT, K);
+    LAPACKE_dgesdd(LAPACK_COL_MAJOR, 'A', L, K, X, L, S, U, L, VT, K);
 
     // LAPACK dgesdd (dgesvd) calculates its singular values in descending order
     // and determine Rmax which eigentriples to be concerned by threadshold.
@@ -211,7 +211,7 @@ _DLLAPI void __stdcall BasicSSA_2(double *x, int N, int L, double threshold, dou
     delete[]X;
 }
 
-void Embedding(double *F, double *X, int N, int L, int ldx)
+void Embedding(double *F, int N, int L, double *X, int ldx)
 {
     int i, j;
     int K = N - L + 1;
@@ -222,7 +222,7 @@ void Embedding(double *F, double *X, int N, int L, int ldx)
     }
 }
 
-void FastSSAMatVecMult(double *F, double *v, double *p, int N, int L)
+void FastSSAMatVecMult(double *F, int N, int L, double *v, double *p)
 {
     double *c = new double[N];
     double *w = new double[N];
@@ -232,7 +232,6 @@ void FastSSAMatVecMult(double *F, double *v, double *p, int N, int L)
     wtilde = (std::complex <double>*) fftw_malloc(sizeof(std::complex <double>) * N);
     ptilde = (std::complex <double>*) fftw_malloc(sizeof(std::complex <double>) * N);
     int i, j;
-    int K = N - L + 1;
 
     for (i = N - L + 1; i <= N; i++) c[i - (N - L + 1)] = F[i - 1];
     for (i = 1; i <= N - L; i++) c[i + (L - 1)] = F[i - 1];
@@ -259,7 +258,7 @@ void FastSSAMatVecMult(double *F, double *v, double *p, int N, int L)
     delete[]c;
 }
 
-void FastSSAMatTransVecMult(double *F, double *v, double *p, int N, int L)
+void FastSSAMatTransVecMult(double *F, int N, int L, double *v, double *p)
 {
     double *c = new double[N];
     double *w = new double[N];
@@ -340,4 +339,62 @@ void RankOneHankelization(double *u, int L, double *v, int K, double sigma, doub
     delete[]w;
     delete[]vtilde;
     delete[]utilde;
+}
+
+void Bidiagonalization(double *X, int N, int ldx, double *U, int L, int ldu, double *V, int K, int ldv, double *alpha, double *beta)
+{
+    double *p = new double[L];
+    double *v0 = new double[K];
+    double *r = new double[K];
+    double _a = 1.0, _b = 0.0;
+    int i, j, k;
+
+    for (i = 0; i < L * L; i++)	U[i] = 0.0;
+    for (i = 0; i < K * K; i++)	V[i] = 0.0;
+
+    //initial matrix
+    for (i = 1; i <= L; i++) p[i - 1] = 1.0;
+    beta[0] = cblas_dnrm2(L, p, 1);
+    for (i = 1; i <= L; i++) U[(i - 1)] = p[i - 1] / beta[0];
+    for (i = 1; i <= K; i++) v0[i - 1] = 0.0;
+    for (j = 1; j <= L; j++) {
+	cblas_dgemv(CblasColMajor, CblasTrans, L, K, _a, X, ldx, &U[(j - 1) * ldu], 1, _b, r, 1);
+	if (j == 1) cblas_daxpy(K, -beta[j - 1], v0, 1, r, 1);
+	else        cblas_daxpy(K, -beta[j - 1], &V[(j - 2) * ldv], 1, r, 1);
+	alpha[j - 1] = cblas_dnrm2(K, r, 1);
+	for (k = 1; k <= K; k++) V[(j - 1) * ldv + (k - 1)] = r[k - 1] / alpha[j - 1];
+	cblas_dgemv(CblasColMajor, CblasNoTrans, L, K, _a, X, ldx, &V[(j - 1) * ldv], 1, _b, p, 1);
+	cblas_daxpy(L, -alpha[j - 1], &U[(j - 1) * ldu], 1, p, 1);
+	beta[j] = cblas_dnrm2(L, p, 1);
+	for (k = 1; k <= L; k++) U[j * ldu + (k - 1)] = p[k - 1] / beta[j];
+    }
+}
+
+void Hankelization(double *Y, int ldy, int N, int L, double *ytilde)
+{
+    int K = N - L + 1;
+    int j, k;
+    double rtmp;
+// Hankelization (or diagonal averaging) [eq. (2.4)]
+    for (k = 1; k <= L; k++) {
+	rtmp = 0.0;
+	for (j = 1; j <= k; j++) {
+	    rtmp = rtmp + Y[j - 1 + (k - j) * ldy];
+	}
+	ytilde[k - 1] = rtmp / double (k);
+    }
+    for (k = L; k < K; k++) {
+	rtmp = 0.0;
+	for (j = 1; j <= L; j++) {
+	    rtmp = rtmp + Y[j - 1 + (k - j) * ldy];
+	}
+	ytilde[k - 1] = rtmp / double (L);
+    }
+    for (k = K; k <= N; k++) {
+	rtmp = 0.0;
+	for (j = k - K + 1; j <= L; j++) {
+	    rtmp = rtmp + Y[j - 1 + (k - j) * ldy];
+	}
+	ytilde[k - 1] = rtmp / double (N - k + 1);
+    }
 }
