@@ -27,6 +27,9 @@ either expressed or implied, of NAKATA Maho.
 */
 
 #import "lapackinterface.dll"
+void mql_gotoblas_init();
+void mql_gotoblas_quit();
+int check_double_8byte_alignment(double &x[]);
 double mql_ddot(int n, double &x[], int incx, double &y[], int incy);
 double mql_dasum(int n, double &x[], int incx);
 int mql_idamax(int n, double &x[], int incx);
@@ -306,4 +309,17 @@ int mql_dtprfb(char side, char trans, char direct, char storev, int m, int n, in
 int mql_dsysv_rook(char uplo, int n, int nrhs, double &a[], int lda, int &ipiv[], double &b[], int ldb);
 
 #import
+
+int ArrayResize_8byte_aligned_double(double &x[], int n)
+{
+    int i = 1;
+    int size;
+    size = ArrayResize(x, n);
+    while (1) {
+	size = ArrayResize(x, n + (i % 8));
+	i++;
+	if (check_double_8byte_alignment(x)) break;
+    }
+    return size;
+}
 

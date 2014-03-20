@@ -39,6 +39,27 @@ either expressed or implied, of NAKATA Maho.
 
 #define _DLLAPI extern "C" __declspec(dllexport)
 
+extern "C" void gotoblas_init(void);
+extern "C" void gotoblas_quit(void);
+
+_DLLAPI void __stdcall mql_gotoblas_init(void)
+{
+    gotoblas_init();
+    return;
+}
+
+_DLLAPI void __stdcall mql_gotoblas_quit(void)
+{
+    gotoblas_quit();
+    return;
+}
+
+_DLLAPI int __stdcall check_double_8byte_alignment(double *x)
+{
+    unsigned int addr = (unsigned int)x;
+    return ((addr % 8)?  0 : 1);
+}
+
 _DLLAPI double __stdcall mql_dasum(int n, double *x, int incx)
 {
     return dasum_f77(&n, x, &incx);
@@ -1435,10 +1456,3 @@ _DLLAPI int __stdcall mql_dtprfb(char side, char trans, char direct, char storev
 {
     return LAPACKE_dtprfb(LAPACK_COL_MAJOR, side, trans, direct, storev, (lapack_int) m, (lapack_int) n, (lapack_int) k, (lapack_int) l, v, (lapack_int) ldv, t, (lapack_int) ldt, a, (lapack_int) lda, b, (lapack_int) ldb);
 }
-
-/*
-_DLLAPI int __stdcall mql_dsysv_rook(char uplo, int n, int nrhs, double *a, int lda, int *ipiv, double *b, int ldb)
-{
-    return LAPACKE_dsysv_rook(LAPACK_COL_MAJOR, uplo, (lapack_int) n, (lapack_int) nrhs, a, (lapack_int) lda, ipiv, b, (lapack_int) ldb);
-}
-*/
