@@ -52,7 +52,7 @@ int init()
 {
     int n = 4;
     double x[], dasum_ret;
-    ArrayResize(x, n);
+    ArrayResize_8byte_aligned_double(x, n);
 
     x[0] = 1.0;    x[1] = 8.0;    x[2] = 3.0;    x[3] = 4.0;
 

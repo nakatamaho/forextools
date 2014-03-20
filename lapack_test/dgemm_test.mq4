@@ -61,9 +61,10 @@ int init()
     int n = 3;
     double alpha, beta;
     double A[], B[], C[];
-    ArrayResize(A, n * n);
-    ArrayResize(B, n * n);
-    ArrayResize(C, n * n);
+   
+    ArrayResize_8byte_aligned_double(A, n * n);
+    ArrayResize_8byte_aligned_double(B, n * n);
+    ArrayResize_8byte_aligned_double(C, n * n);
 
     A[0 + 0 * n] = 1;    A[0 + 1 * n] = 8;    A[0 + 2 * n] = 3;
     A[1 + 0 * n] = 2;    A[1 + 1 * n] = 10;   A[1 + 2 * n] = 8;

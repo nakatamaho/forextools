@@ -60,8 +60,8 @@ int init()
 {
     int n = 3, ret;
     double A[], w[];
-    ArrayResize(A, n * n);
-    ArrayResize(w, n);
+    ArrayResize_8byte_aligned_double(A, n * n);
+    ArrayResize_8byte_aligned_double(w, n);
 
     //setting A matrix
     A[0 + 0 * n] = 1;    A[0 + 1 * n] = 2;    A[0 + 2 * n] = 3;

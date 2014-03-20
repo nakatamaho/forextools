@@ -40,28 +40,33 @@ void printvec(int N, double &x[])
     string STR;
     STR = "[ ";
     for (int i = 0; i < N; i++) {
-        mtmp = x[i];
-        STR = STR + StringFormat("%5.2e", mtmp);
-        if (i < N-1) STR = STR + (", ");
+	mtmp = x[i];
+	STR = STR + StringFormat("%5.2e", mtmp);
+	if (i < N - 1)
+	    STR = STR + (", ");
     }
     STR = STR + ("]");
     Print(STR);
 }
 
+
 int init()
 {
-    int n = 4;
-    double x[], y[], alpha = -2.0;
-    ArrayResize(x, n);
-    ArrayResize(y, n);
+    int n = 5;
+    double x[];
+    double y[];
+    double alpha = 1.0;
+    ArrayResize_8byte_aligned_double(x, n);
+    ArrayResize_8byte_aligned_double(y, n);
 
-    x[0] = 1;    x[1] = 8;    x[2] = 3;    x[3] = 4;
-    y[0] = -3;   y[1] = 9;    y[2] = 1;    y[3] = 10;
+    x[0] = 1;    x[1] = 8;    x[2] = 3;    x[3] = 4;    x[4] = 5;
+    y[0] = -3;   y[1] = 9;    y[2] = 1;    y[3] = 10;    y[4] = 12;
 
     printf("x =");    printvec(n, x);    printf("\n");
     printf("y =");    printvec(n, y);    printf("\n");
     mql_daxpy(n, alpha, x, 1, y, 1);
-    printf("y =");    printvec(n, y);    printf("\n");
+    printf("xans ="); printvec(n, x);    printf("\n");
+    printf("yans ="); printvec(n, y);    printf("\n");
 
     return (0);
 }

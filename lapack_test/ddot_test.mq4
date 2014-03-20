@@ -52,8 +52,8 @@ int init()
 {
     int n = 4;
     double x[], y[], ddot_ret;
-    ArrayResize(x, n);
-    ArrayResize(y, n);
+    ArrayResize_8byte_aligned_double(x, n);
+    ArrayResize_8byte_aligned_double(y, n);
 
     x[0] = 1;    x[1] = 8;    x[2] = 3;    x[3] = 4;
     y[0] = -3;   y[1] = 9;    y[2] = 1;    y[3] = 10;

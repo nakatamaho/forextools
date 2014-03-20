@@ -62,8 +62,8 @@ int init()
     int ret;
     double A[], B[];
 
-    ArrayResize(A, m * n);
-    ArrayResize(B, m * nrhs);
+    ArrayResize_8byte_aligned_double(A, m * n);
+    ArrayResize_8byte_aligned_double(B, m * nrhs);
 
     //setting A matrix
     A[0 + 0 * lda] = 1;    A[0 + 1 * lda] = 1;    A[0 + 2 * lda] = 1;

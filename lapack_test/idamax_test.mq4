@@ -52,7 +52,7 @@ int init()
 {
     int n = 4, idamax_ret;
     double x[];
-    ArrayResize(x, n);
+    ArrayResize_8byte_aligned_double(x, n);
 
     x[0] = 1;    x[1] = 8;    x[2] = 3;    x[3] = 4;
 

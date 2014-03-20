@@ -62,10 +62,10 @@ int init()
     int m = 3, n = 4, ret;
     double A[], U[], VT[], S[];
 
-    ArrayResize(A, m * n);
-    ArrayResize(U, m * m);
-    ArrayResize(VT, n * n);
-    ArrayResize(S, min(m, n));
+    ArrayResize_8byte_aligned_double(A, m * n);
+    ArrayResize_8byte_aligned_double(U, m * m);
+    ArrayResize_8byte_aligned_double(VT, n * n);
+    ArrayResize_8byte_aligned_double(S, min(m, n));
 
     //setting A matrix
     A[0 + 0 * m] = 1;    A[0 + 1 * m] = 2;    A[0 + 2 * m] = 3;    A[0 + 3 * m] = 4;
