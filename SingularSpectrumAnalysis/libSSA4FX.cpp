@@ -47,6 +47,7 @@ either expressed or implied, of NAKATA Maho.
 
 #include <complex>
 #include <fftw3.h>
+#include <cblas.h>
 #include <lapacke.h>
 
 #define _DLLAPI extern "C" __declspec(dllexport)
@@ -356,7 +357,6 @@ void Bidiagonalization(double *X, int N, int ldx, double *U, int L, int ldu, dou
     for (i = 1; i <= L; i++) p[i - 1] = 1.0;
     beta[0] = cblas_dnrm2(L, p, 1);
     for (i = 1; i <= L; i++) U[(i - 1)] = p[i - 1] / beta[0];
-    for (i = 1; i <= K; i++) v0[i - 1] = 0.0;
     for (j = 1; j <= L; j++) {
 	cblas_dgemv(CblasColMajor, CblasTrans, L, K, _a, X, ldx, &U[(j - 1) * ldu], 1, _b, r, 1);
 	if (j == 1) cblas_daxpy(K, -beta[j - 1], V, 1, r, 1); //actually zero vector should be input.

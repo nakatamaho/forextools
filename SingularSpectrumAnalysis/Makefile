@@ -23,7 +23,8 @@ MT4LIBRARYDIR   = MQL4/Libraries
 INDICATORs_SRC  = BasicSSA.mq4 CasualSSA.mq4
 INDICATORs      = $(INDICATORs_SRC:%.mq4=%.ex4)
 LIBSSA		= libSSA4FX
-LAPACKLIB       = $(MSYSHOME)/local/lib/liblapacke.a $(MSYSHOME)/local/lib/liblapack.a $(MSYSHOME)/local/lib/libblas.a -lgfortran
+LAPACKLIB       = $(MSYSHOME)/local/lib/libopenblas.a
+#LAPACKLIB       = $(MSYSHOME)/local/lib/liblapacke.a $(MSYSHOME)/local/lib/liblapack.a $(MSYSHOME)/local/lib/libblas.a -lgfortran
 FFTWLIB         = -L$(MSYSHOME)/local/lib -Wl,-Bstatic -lfftw3 -lm
 STATICALIZER    = -static -lgfortran -static-libgfortran -static-libgcc
 
