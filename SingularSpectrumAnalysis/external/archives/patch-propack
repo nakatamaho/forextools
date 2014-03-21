@@ -1,0 +1,84 @@
+--- Make/make.linux_gcc_ia32_org	2014-03-21 17:05:55.427242100 +0900
++++ Make/make.linux_gcc_ia32	2014-03-21 17:07:16.523853300 +0900
+@@ -24,15 +24,15 @@
+ 
+ # Which compiler and linker to use
+ CC = gcc
+-F77 = g77 
+-LINKER = g77 
++F77 = gfortran
++LINKER = gfortran
+ MAKELIB = ar rc
+ 
+ # Linker paths and flags
+ #LIBPATH =  -L$/usr/local/lib
+ #BLAS = -lmkl_p4 -lguide
+-LIBPATH =  -L$(HOME)/lib/$(ARCH)
+-BLAS = -lgoto_p4_512-r0.9
++LIBPATH =  #-L$(HOME)/lib/$(ARCH)
++BLAS = c:/mingw/msys/1.0/local/lib/libopenblas.a
+ #BLAS = -lgoto_p3_512-r0.9
+ RANLIB = ranlib
+ MGS = mgs.pentium
+
+--- Make/make.linux_gcc_ia32	2014-03-21 17:12:42.647864400 +0900
++++ Make/make.linux_gcc_ia32	2014-03-21 17:12:42.647864400 +0900
+@@ -39,4 +39,4 @@
+ 
+ 
+ #  Platform postfix to use in naming executables and library files
+-PLAT = LINUX_GCC_IA32
++PLAT = MINGW32
+
+--- complex16/second.F	2014-03-21 17:25:46.695269200 +0900
++++ complex16/second.F	2014-03-21 17:25:59.663917200 +0900
+@@ -25,8 +25,7 @@
+       REAL               ETIME_
+       EXTERNAL           ETIME_
+ #else
+-      REAL               ETIME
+-      EXTERNAL           ETIME
++      EXTERNAL           REAL ETIME
+ #endif 
+ 
+ *     ..
+
+
+--- complex8/second.F	2014-03-21 17:25:46.695269200 +0900
++++ complex8/second.F	2014-03-21 17:25:59.663917200 +0900
+@@ -25,8 +25,7 @@
+       REAL               ETIME_
+       EXTERNAL           ETIME_
+ #else
+-      REAL               ETIME
+-      EXTERNAL           ETIME
++      EXTERNAL           REAL ETIME
+ #endif 
+ 
+ *     ..
+
+--- single/second.F	2014-03-21 17:25:46.695269200 +0900
++++ single/second.F	2014-03-21 17:25:59.663917200 +0900
+@@ -25,8 +25,7 @@
+       REAL               ETIME_
+       EXTERNAL           ETIME_
+ #else
+-      REAL               ETIME
+-      EXTERNAL           ETIME
++      EXTERNAL           REAL ETIME
+ #endif 
+ 
+ *     ..
+
+--- double/second.F	2014-03-21 17:25:46.695269200 +0900
++++ double/second.F	2014-03-21 17:25:59.663917200 +0900
+@@ -25,8 +25,7 @@
+       REAL               ETIME_
+       EXTERNAL           ETIME_
+ #else
+-      REAL               ETIME
+-      EXTERNAL           ETIME
++      EXTERNAL           REAL ETIME
+ #endif 
+ 
+ *     ..
