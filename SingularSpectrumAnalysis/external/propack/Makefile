@@ -8,7 +8,7 @@ BUILD_STAMP=.propack_build_done
 INSTALL_STAMP=.propack_install_done
 CHECK_STAMP=.propack_check_done
 
-all: extract config build #check install
+all: extract config build check install
 
 work/$(EXTRACT_STAMP):
 	rm -rf work
@@ -29,7 +29,7 @@ work/$(BUILD_STAMP): work/$(CONFIGURE_STAMP)
 	touch work/$(BUILD_STAMP)
 
 work/$(CHECK_STAMP): work/$(BUILD_STAMP)
-	cd work/$(BUILDDIR)
+	cd work/$(BUILDDIR) ; make test ; make verify
 	touch work/$(BUILD_STAMP)
 
 work/$(INSTALL_STAMP): work/$(CHECK_STAMP)
