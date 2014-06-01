@@ -82,3 +82,96 @@
  #endif 
  
  *     ..
+
+--- complex16/Examples/Makefile	2014-06-01 12:33:38.531559600 +0900
++++ complex16/Examples/Makefile	2014-06-01 12:34:59.166747200 +0900
+@@ -45,15 +45,15 @@
+ 
+ test:
+ 	@( echo "==Testing DOUBLE COMPLEX version without implicit restart.=="; \
+-	example.$(PLAT).x <  example.in; \
++	./example.$(PLAT).x <  example.in; \
+ 	echo "==Testing DOUBLE COMPLEX version with implicit restart.=="; \
+-	example_irl.$(PLAT).x <  example_irl.in )
++	./example_irl.$(PLAT).x <  example_irl.in )
+ 
+ verify: 
+ 	@( echo "==Comparing DOUBLE COMPLEX results to reference.=="; \
+-	compare.$(PLAT).x < compare.in; \
++	./compare.$(PLAT).x < compare.in; \
+ 	echo "==Comparing DOUBLE COMPLEX IRL results to reference.=="; \
+-	compare.$(PLAT).x < compare_irl.in )
++	./compare.$(PLAT).x < compare_irl.in )
+ 
+ clean:	
+ 	rm -f  *.o *.il
+
+--- complex8/Examples/Makefile	2014-06-01 12:33:38.631703600 +0900
++++ complex8/Examples/Makefile	2014-06-01 12:34:46.829006400 +0900
+@@ -45,15 +45,15 @@
+ 
+ test:
+ 	@( echo "==Testing COMPLEX version without implicit restart.=="; \
+-	example.$(PLAT).x <  example.in; \
++	./example.$(PLAT).x <  example.in; \
+ 	echo "==Testing COMPLEX version with implicit restart.=="; \
+-	example_irl.$(PLAT).x <  example_irl.in )
++	./example_irl.$(PLAT).x <  example_irl.in )
+ 
+ verify: 
+ 	@( echo "==Comparing COMPLEX results to reference.=="; \
+-	compare.$(PLAT).x < compare.in; \
++	./compare.$(PLAT).x < compare.in; \
+ 	echo "==Comparing COMPLEX IRL results to reference.=="; \
+-	compare.$(PLAT).x < compare_irl.in )
++	./compare.$(PLAT).x < compare_irl.in )
+ 
+ clean:	
+ 	rm -f  *.o *.il
+
+--- double/Examples/Makefile	2014-06-01 12:33:38.731847600 +0900
++++ double/Examples/Makefile	2014-06-01 12:34:15.905300400 +0900
+@@ -45,15 +45,15 @@
+ 
+ test:
+ 	@( echo "==Testing DOUBLE PRECISION version without implicit restart.=="; \
+-	example.$(PLAT).x <  example.in; \
++	./example.$(PLAT).x <  example.in; \
+ 	echo "==Testing DOUBLE PRECISION version with implicit restart.=="; \
+-	example_irl.$(PLAT).x <  example_irl.in )
++	./example_irl.$(PLAT).x <  example_irl.in )
+ 
+ verify: 
+ 	@( echo "==Comparing DOUBLE PRECISION results to reference.=="; \
+-	compare.$(PLAT).x < compare.in; \
++	./compare.$(PLAT).x < compare.in; \
+ 	echo "==Comparing DOUBLE PRECISION IRL results to reference.=="; \
+-	compare.$(PLAT).x < compare_irl.in )
++	./compare.$(PLAT).x < compare_irl.in )
+ 
+ clean:	
+ 	rm -f  *.o *.il
+
+--- single/Examples/Makefile	2014-06-01 12:33:38.852020400 +0900
++++ single/Examples/Makefile	2014-06-01 12:34:02.536076400 +0900
+@@ -46,15 +46,15 @@
+ 
+ test:
+ 	@( echo "==Testing REAL version without implicit restart.=="; \
+-	example.$(PLAT).x <  example.in; \
++	./example.$(PLAT).x <  example.in; \
+ 	echo "==Testing REAL version with implicit restart.=="; \
+-	example_irl.$(PLAT).x <  example_irl.in)
++	./example_irl.$(PLAT).x <  example_irl.in)
+ 
+ verify: 
+ 	@( echo "==Comparing REAL results to reference.=="; \
+-	compare.$(PLAT).x < compare.in; \
++	./compare.$(PLAT).x < compare.in; \
+ 	echo "==Comparing REAL IRL results to reference.=="; \
+-	compare.$(PLAT).x < compare_irl.in )
++	./compare.$(PLAT).x < compare_irl.in )
+ 
+ clean:	
+ 	rm -f  *.o *.il
+
