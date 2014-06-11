@@ -48,7 +48,7 @@ void BasicSSA(double &x[], int N, int L, int Rmax, double &xtilde[]);
 void BasicSSA_2(double &x[], int N, int L, double threshold, double &xtilde[]);
 #import
 
-input int ArrayLength = 300;
+input int TotalLength = 100;
 input int WindowLength = 30;
 input int Rmax = 3;
 input double threshold = 2.0;
@@ -62,24 +62,24 @@ double DnLine[];
 
 int OnInit(void)
 {
-    IndicatorBuffers(1);
+    IndicatorBuffers(3);
     IndicatorDigits(Digits);
 
     SetIndexStyle(0, DRAW_LINE);
     SetIndexBuffer(0, ExtBuffer);
     SetIndexShift(0, 0);
     SetIndexLabel(0, "Basic SSA");
-    SetIndexDrawBegin(0, ArrayLength);
+    SetIndexDrawBegin(0, TotalLength);
 
     SetIndexStyle(1, DRAW_LINE);
     SetIndexBuffer(1, UpLine);
     SetIndexShift(1, 0);
-    SetIndexDrawBegin(1, ArrayLength);
+    SetIndexDrawBegin(1, TotalLength);
 
     SetIndexStyle(2, DRAW_LINE);
     SetIndexBuffer(2, DnLine);
     SetIndexShift(2, 0);
-    SetIndexDrawBegin(2, ArrayLength);
+    SetIndexDrawBegin(2, TotalLength);
 
     return (INIT_SUCCEEDED);
 }
@@ -88,8 +88,8 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 		const double &open[], const double &high[], const double &low[], const double &close[], const long &tick_volume[],
 		const long &volume[], const int &spread[])
 {
-    int i, j, p, q, r;
-    if (rates_total <= ArrayLength)
+    int i, j, k;
+    if (rates_total <= TotalLength * 2)
 	return (0);
 
     ArraySetAsSeries(ExtBuffer, true);
@@ -99,27 +99,23 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
     ArraySetAsSeries(DnLine, true);
     ArraySetAsSeries(close, true);
 
-    ArrayResize(SSABuffer, ArrayLength);
-    ArrayResize(PriceBuffer, ArrayLength);
+    ArrayResize(SSABuffer, TotalLength);
+    ArrayResize(PriceBuffer, TotalLength);
 
-    for (i = ArrayLength - 1; i >= 0; i--) {
-	p = rates_total;
-	q = i + ArrayLength - 1;
-	if (p < q)
-	    break;
-	r = 0;
-	for (j = i; j < i + ArrayLength; j++) {
-	    PriceBuffer[r] = close[j];
-	    r++;
+    for (i = TotalLength - 1 ; i > 0 ; i--) {
+        k = TotalLength - 1;
+	for (j = i + TotalLength - 1 ; j >= i ; j--) {
+	    PriceBuffer[k] = close[j];
+            k--; 
 	}
 	if (SSAMethod)
-	    BasicSSA(PriceBuffer, ArrayLength, WindowLength, Rmax, SSABuffer);
+	    BasicSSA(PriceBuffer, TotalLength, WindowLength, Rmax, SSABuffer);
 	else
-	    BasicSSA_2(PriceBuffer, ArrayLength, WindowLength, threshold, SSABuffer);
+	    BasicSSA_2(PriceBuffer, TotalLength, WindowLength, threshold, SSABuffer);
 	ExtBuffer[i] = SSABuffer[0];
     }
 
-    for (i = 0; i <= ArrayLength; i++) {
+    for (i = 0; i <= TotalLength; i++) {
 	if (ExtBuffer[i] >= ExtBuffer[i + 1]) {
 	    UpLine[i] = ExtBuffer[i];
 	    DnLine[i] = EMPTY_VALUE;
