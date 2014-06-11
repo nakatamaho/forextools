@@ -42,7 +42,7 @@ void BasicSSA(double &x[], int N, int L, int Rmax, double &xtilde[]);
 void BasicSSA_2(double &x[], int N, int L, double threshold, double &xtilde[]);
 #import
 
-input int ArrayLength = 300;
+input int TotalLength = 300;
 input int WindowLength = 30;
 input int Rmax = 3;
 input double threshold = 2.0;
@@ -61,7 +61,7 @@ int OnInit(void)
     SetIndexBuffer(0, ExtBuffer);
     SetIndexShift(0, 0);
     SetIndexLabel(0, "Basic SSA");
-    SetIndexDrawBegin(0, ArrayLength);
+    SetIndexDrawBegin(0, TotalLength);
     return (INIT_SUCCEEDED);
 }
 
@@ -70,7 +70,7 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 		const long &volume[], const int &spread[])
 {
     int i, pos;
-    if (rates_total <= ArrayLength)
+    if (rates_total <= TotalLength)
 	return (0);
 
     ArraySetAsSeries(ExtBuffer, true);
@@ -78,19 +78,19 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
     ArraySetAsSeries(PriceBuffer, true);
     ArraySetAsSeries(close, true);
 
-    ArrayResize(SSABuffer, ArrayLength);
-    ArrayResize(PriceBuffer, ArrayLength);
+    ArrayResize(SSABuffer, TotalLength);
+    ArrayResize(PriceBuffer, TotalLength);
 
-    for (i = ArrayLength - 1; i >= 0; i--) {
+    for (i = TotalLength - 1; i >= 0; i--) {
 	PriceBuffer[i] = close[i];
     }
 
     if (SSAMethod)
-	BasicSSA(PriceBuffer, ArrayLength, WindowLength, Rmax, SSABuffer);
+	BasicSSA(PriceBuffer, TotalLength, WindowLength, Rmax, SSABuffer);
     else
-	BasicSSA_2(PriceBuffer, ArrayLength, WindowLength, threshold, SSABuffer);
+	BasicSSA_2(PriceBuffer, TotalLength, WindowLength, threshold, SSABuffer);
 
-    for (i = ArrayLength - 1; i >= 0; i--) {
+    for (i = TotalLength - 1; i >= 0; i--) {
 	ExtBuffer[i] = SSABuffer[i];
     }
 
