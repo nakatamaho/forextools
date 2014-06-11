@@ -48,7 +48,7 @@ void BasicSSA(double &x[], int N, int L, int Rmax, double &xtilde[]);
 void BasicSSA_2(double &x[], int N, int L, double threshold, double &xtilde[]);
 #import
 
-input int TotalLength = 100;
+input int TotalLength = 300;
 input int WindowLength = 30;
 input int Rmax = 3;
 input double threshold = 2.0;
@@ -89,8 +89,11 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 		const long &volume[], const int &spread[])
 {
     int i, j, k;
+    int limit = prev_calculated;
     if (rates_total <= TotalLength * 2)
 	return (0);
+
+    if(prev_calculated > 0) limit--;
 
     ArraySetAsSeries(ExtBuffer, true);
     ArraySetAsSeries(SSABuffer, true);
@@ -102,7 +105,7 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
     ArrayResize(SSABuffer, TotalLength);
     ArrayResize(PriceBuffer, TotalLength);
 
-    for (i = TotalLength - 1 ; i > 0 ; i--) {
+    for (i = TotalLength - 1 ; i > limit ; i--) {
         k = TotalLength - 1;
 	for (j = i + TotalLength - 1 ; j >= i ; j--) {
 	    PriceBuffer[k] = close[j];
