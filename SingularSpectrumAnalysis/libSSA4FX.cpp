@@ -50,17 +50,63 @@ either expressed or implied, of NAKATA Maho.
 #include <cblas.h>
 #include <lapacke.h>
 
+#define F77_FUNC(name,NAME) name ## _
+#define F77_FUNC_(name,NAME) name ## _
+#define dlansvd_irl_f77 F77_FUNC (dlansvd_irl, DLANDSVD_IRL)
+#define dlansvd_f77 F77_FUNC (dlansvd, DLANDSVD)
+
+typedef void (*daprod) (char *transa, int *m, int *n, double *x, double *y, double *dparm, int *iparm);
+extern "C" int dlansvd_irl_f77(char *which, char *jobu, char *jobv, int *m, int *n, int *dim, int *p, int *neig, int *maxiter, daprod aprod, double *u, int *ldu, double *sigma, double *bnd, double *v, int *ldv, double *tolin, double *work, int *lwork, int *iwork, int *liwork, double *doption, int *option, int *info, double *dparm, int *iparm);
+extern "C" int dlansvd_f77(char *jobu, char *jobv, int *m, int *n, int *k, int *kmax, daprod aprod, double *u, int *ldu, double *sigma, double *bnd, double *v, int *ldv, double *tolin, double *work, int *lwork, int *iwork, int *liwork, double *doption, int *ioption, int *info, double *dparm, int *iparm);
+
 #define _DLLAPI extern "C" __declspec(dllexport)
 
 _DLLAPI void __stdcall BasicSSA(double *x, int N, int L, int Rmax, double *xtilde);
-_DLLAPI void __stdcall BasicSSA_2(double *x, int N, int L, double threshold, double *xtilde);
+_DLLAPI void __stdcall BasicSSA_LAPACK(double *x, int N, int L, int Rmax, double *xtilde);
+//for compatibility
+_DLLAPI void __stdcall fastsingular(double *x, int N, int L, int Rmax, double *xtilde);
+_DLLAPI void __stdcall fastSingular(double *x, int N, int L, int Rmax, double *xtilde);
 
-// Do Basic Singular Spectrum Analysis for a time series.
+int Mlsame(const char *a, const char *b)
+{
+    if (toupper(*a) == toupper(*b))
+	return 1;
+    return 0;
+}
+
+void matvecprod_dense(char *transa, int *m, int *n, double *x, double *y, double *dparm, int *iparm)
+{
+    int i, j;
+    int ldx = iparm[0];
+    double rtmp;
+    if (Mlsame(transa, "N")) {
+	for (i = 1; i <= (*m); i++) {
+	    rtmp = 0.0;
+	    for (j = 1; j <= (*n); j++) {
+		rtmp += dparm[(i - 1) + (j - 1) * ldx] * x[(j - 1)];
+	    }
+	    y[i - 1] = rtmp;
+	}
+	return;
+    }
+    if (Mlsame(transa, "T")) {
+	for (i = 1; i <= (*n); i++) {
+	    rtmp = 0.0;
+	    for (j = 1; j <= (*m); j++) {
+		rtmp += dparm[(j - 1) + (i - 1) * ldx] * x[(j - 1)];
+	    }
+	    y[i - 1] = rtmp;
+	}
+	return;
+    }
+}
+
+// Do Basic Singular Spectrum Analysis for a time series using LAPACK
 // x is real-valued time series (x_1, x_2, \cdots, x_N) of length N.
-// L is the window length, K = N - N + 1;
+// L is the window length, K = N - L + 1;
 // xtilde is reconstructed series.
 // this BasicSSA is not fast; do full SVD via LAPACK and do not employ Hankel structure of matrix.
-_DLLAPI void __stdcall BasicSSA(double *x, int N, int L, int Rmax, double *xtilde)
+_DLLAPI void __stdcall BasicSSA_LAPACK(double *x, int N, int L, int Rmax, double *xtilde)
 {
     int K = N - L + 1;
     int i, j, k;
@@ -85,7 +131,7 @@ _DLLAPI void __stdcall BasicSSA(double *x, int N, int L, int Rmax, double *xtild
     LAPACKE_dgesdd(LAPACK_COL_MAJOR, 'A', L, K, X, L, S, U, L, VT, K);
 
     // Reconstruction using eigentriples
-    // (\lambda_i, Ui, V_i), 1 <= i <= R
+    // (\lambda_i, Ui, V_i), 1 <= i <= Rmax
     for (q = 1; q <= K; q++) {
 	for (p = 1; p <= L; p++) {
 	    rtmp = 0.0;
@@ -126,22 +172,46 @@ _DLLAPI void __stdcall BasicSSA(double *x, int N, int L, int Rmax, double *xtild
     delete[]X;
 }
 
-// Do Basic Singular Spectrum Analysis for a time series.
-// Maxmium number of singular vaule is determined by thershold,
-// 90% of trace -> 1, 99% of trace -> 2, 99.9%  of trace -> 3 etc.
-_DLLAPI void __stdcall BasicSSA_2(double *x, int N, int L, double threshold, double *xtilde)
+// Do Basic Singular Spectrum Analysis for a time series using PROPACK
+// x is real-valued time series (x_1, x_2, \cdots, x_N) of length N.
+// L is the window length, K = L - N + 1;
+// xtilde is reconstructed series.
+_DLLAPI void __stdcall BasicSSA(double *x, int N, int L, int Rmax, double *xtilde)
 {
     int K = N - L + 1;
-    int i, j, k;
-    int p, q;
-    int Rmax;
-    double *X = new double[L * K];
-    double *Ystar = new double[L * K];
-    double *U = new double[L * L];
-    double *VT = new double[K * K];
-    double *S = new double[L];
-    double rtmp, trace;
-    int ldx = L, ldystar = L, ldu = L, ldvt = K;
+    int i, j, k, p, q;
+
+    int ldx = L, ldystar = L, ldu = L, ldv = K;
+    double tolin = 1e-12;
+    int nb = 64;		//block
+    int kmax = 1000;		//maximum itration number
+    int lwork = L + K + 9 * kmax + 5 * kmax * kmax + 4 + std::max(3 * kmax * kmax + 4 * kmax + 4, nb * std::max(L, K));
+
+    double *work = new double[lwork];
+    int liwork = 8 * kmax;
+    int *iwork = new int[liwork];
+    int info;
+    int *iparm = new int[1];
+    iparm[0] = L;		//lda;
+    double *doption = new double[3];
+    int *ioption = new int[2];
+    double eps = 1e-15;		//dlamch('e')
+    char jobu = 'Y';		//left singular vectors
+    char jobv = 'Y';		//right singular vectors
+
+    doption[0] = sqrt(eps);
+    doption[1] = pow(eps, 0.75);
+    doption[2] = 0.0;
+    ioption[0] = 0;
+    ioption[1] = 1;
+
+    double *X = new double[K * L];
+    double *Ystar = new double[K * L];
+    double *U = new double[L * kmax];
+    double *V = new double[K * kmax];
+    double *S = new double[Rmax];
+    double *bnd = new double[Rmax];
+    double rtmp;
 
     //construct L-trajectory matrix [eq. (2.1)]
     for (j = 1; j <= K; j++) {
@@ -150,33 +220,16 @@ _DLLAPI void __stdcall BasicSSA_2(double *x, int N, int L, double threshold, dou
 	}
     }
 
-    // Do singular value decomposition of trajectory matrix.
-    // implicitly correspond to [eq. (2.2)]
-    LAPACKE_dgesdd(LAPACK_COL_MAJOR, 'A', L, K, X, L, S, U, L, VT, K);
-
-    // LAPACK dgesdd (dgesvd) calculates its singular values in descending order
-    // and determine Rmax which eigentriples to be concerned by threadshold.
-    // (\lambda_i, Ui, V_i), 1 <= i <= rank
-    // implicitly correspond to [eq. (2.3)]
-    trace = 0.0;
-    for (i = 1; i <= L; i++)
-	trace = trace + S[i - 1];
-    trace = trace * (1.0 - pow(10.0, -threshold));
-    rtmp = 0.0;
-    for (i = 1; i <= L; i++) {
-	rtmp = rtmp + S[i - 1];
-	Rmax = i;
-	if (rtmp > trace)
-	    break;
-    }
+    dlansvd_f77(&jobu, &jobv, &L, &K, &Rmax, &kmax, matvecprod_dense, U, &ldu, S, bnd, V, &ldv, &tolin, work, &lwork, iwork,
+		&liwork, doption, ioption, &info, X, iparm);
 
     // Reconstruction using eigentriples
-    // (\lambda_i, Ui, V_i), 1 <= i <= Rmax
+    // (\lambda_i, Ui, V_i), 1 <= i <= R
     for (q = 1; q <= K; q++) {
 	for (p = 1; p <= L; p++) {
 	    rtmp = 0.0;
 	    for (i = 1; i <= Rmax; i++) {
-		rtmp = rtmp + U[(p - 1) + (i - 1) * ldu] * S[i - 1] * VT[(i - 1) + (q - 1) * ldvt];
+		rtmp = rtmp + U[(p - 1) + (i - 1) * ldu] * S[i - 1] * V[(q - 1) + (i - 1) * ldv];
 	    }
 	    Ystar[(p - 1) + (q - 1) * ldystar] = rtmp;
 	}
@@ -205,8 +258,14 @@ _DLLAPI void __stdcall BasicSSA_2(double *x, int N, int L, double threshold, dou
 	xtilde[k - 1] = rtmp / double (N - k + 1);
     }
 
+    delete[]ioption;
+    delete[]doption;
+    delete[]iparm;
+    delete[]iwork;
+    delete[]work;
+    delete[]bnd;
     delete[]S;
-    delete[]VT;
+    delete[]V;
     delete[]U;
     delete[]Ystar;
     delete[]X;
@@ -403,4 +462,14 @@ void Hankelization(double *Y, int ldy, int N, int L, double *ytilde)
 	}
 	ytilde[k - 1] = rtmp / double (N - k + 1);
     }
+}
+
+_DLLAPI void __stdcall fastsingular(double *x, int N, int L, int Rmax, double *xtilde)
+{
+    BasicSSA(x, N, L, Rmax, xtilde);
+}
+
+_DLLAPI void __stdcall fastSingular(double *x, int N, int L, int Rmax, double *xtilde)
+{
+    BasicSSA(x, N, L, Rmax, xtilde);
 }

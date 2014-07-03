@@ -44,6 +44,7 @@ either expressed or implied, of NAKATA Maho.
 #property indicator_width3 4
 
 #import "libSSA4FX.dll"
+void BasicSSA_LAPACK(double &x[], int N, int L, int Rmax, double &xtilde[]);
 void BasicSSA(double &x[], int N, int L, int Rmax, double &xtilde[]);
 void BasicSSA_2(double &x[], int N, int L, double threshold, double &xtilde[]);
 #import
@@ -53,6 +54,7 @@ input int WindowLength = 30;
 input int Rmax = 3;
 input double threshold = 2.0;
 input int SSAMethod = 1;
+input int SSA_PROPACK = 1;
 
 double SSABuffer[];
 double ExtBuffer[];
@@ -112,7 +114,11 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
             k--; 
 	}
 	if (SSAMethod)
-	    BasicSSA(PriceBuffer, TotalLength, WindowLength, Rmax, SSABuffer);
+	   if (SSA_PROPACK == 1) { 
+	       BasicSSA(PriceBuffer, TotalLength, WindowLength, Rmax, SSABuffer);
+           } else { 
+	       BasicSSA_LAPACK(PriceBuffer, TotalLength, WindowLength, Rmax, SSABuffer);
+           }  
 	else
 	    BasicSSA_2(PriceBuffer, TotalLength, WindowLength, threshold, SSABuffer);
 	ExtBuffer[i] = SSABuffer[0];
