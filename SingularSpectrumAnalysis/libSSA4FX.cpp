@@ -227,7 +227,7 @@ _DLLAPI void __stdcall BasicSSA(double *x, int N, int L, int Rmax, double *xtild
 		&liwork, doption, ioption, &info, X, iparm);
 
     // Reconstruction using eigentriples
-    // (\lambda_i, Ui, V_i), 1 <= i <= R
+    // (\lambda_i, Ui, V_i), 1 <= i <= Rmax
     for (q = 1; q <= K; q++) {
 	for (p = 1; p <= L; p++) {
 	    rtmp = 0.0;
