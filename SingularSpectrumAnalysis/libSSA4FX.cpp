@@ -82,24 +82,13 @@ void matvecprod_dense(char *transa, int *m, int *n, double *x, double *y, double
     int i, j;
     int ldx = iparm[0];
     double rtmp;
+    double alpha = 1.0, beta = 0.0;
     if (Mlsame(transa, "N")) {
-	for (i = 1; i <= (*m); i++) {
-	    rtmp = 0.0;
-	    for (j = 1; j <= (*n); j++) {
-		rtmp += dparm[(i - 1) + (j - 1) * ldx] * x[(j - 1)];
-	    }
-	    y[i - 1] = rtmp;
-	}
+        cblas_dgemv(CblasColMajor, CblasNoTrans, (*m), (*n), alpha, dparm, ldx, x, 1, beta, y, 1);
 	return;
     }
     if (Mlsame(transa, "T")) {
-	for (i = 1; i <= (*n); i++) {
-	    rtmp = 0.0;
-	    for (j = 1; j <= (*m); j++) {
-		rtmp += dparm[(j - 1) + (i - 1) * ldx] * x[(j - 1)];
-	    }
-	    y[i - 1] = rtmp;
-	}
+        cblas_dgemv(CblasColMajor, CblasTrans, (*m), (*n), alpha, dparm, ldx, x, 1, beta, y, 1);
 	return;
     }
 }
@@ -185,7 +174,7 @@ _DLLAPI void __stdcall BasicSSA(double *x, int N, int L, int Rmax, double *xtild
     int i, j, k, p, q;
 
     int ldx = L, ldystar = L, ldu = L, ldv = K;
-    double tolin = 1e-12;
+    double tolin = 1e-9;
     int nb = 128;		//block
     int kmax = K * 3; 		//maximum itration number
     int lwork = L + K + 9 * kmax + 5 * kmax * kmax + 4 + std::max(3 * kmax * kmax + 4 * kmax + 4, nb * std::max(L, K));
