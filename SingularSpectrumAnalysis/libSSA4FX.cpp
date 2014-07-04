@@ -93,77 +93,6 @@ void matvecprod_dense(char *transa, int *m, int *n, double *x, double *y, double
     }
 }
 
-// Do Basic Singular Spectrum Analysis for a time series using LAPACK
-// x is real-valued time series (x_1, x_2, \cdots, x_N) of length N.
-// L is the window length, K = N - L + 1;
-// xtilde is reconstructed series.
-// this BasicSSA is not fast; do full SVD via LAPACK and do not employ Hankel structure of matrix.
-_DLLAPI void __stdcall BasicSSA_LAPACK(double *x, int N, int L, int Rmax, double *xtilde)
-{
-    int K = N - L + 1;
-    int i, j, k;
-    int p, q;
-    double *X = new double[L * K];
-    double *Ystar = new double[L * K];
-    double *U = new double[L * L];
-    double *VT = new double[K * K];
-    double *S = new double[L];
-    double rtmp;
-    int ldx = L, ldystar = L, ldu = L, ldvt = K;
-
-    //construct L-trajectory matrix [eq. (2.1)]
-    for (j = 1; j <= K; j++) {
-	for (i = 1; i <= L; i++) {
-	    X[(i - 1) + (j - 1) * ldx] = x[(i - 1) + (j - 1)];
-	}
-    }
-
-    // Do singular value decomposition of trajectory matrix.
-    // implicitly correspond to [eq. (2.2)]
-    LAPACKE_dgesdd(LAPACK_COL_MAJOR, 'A', L, K, X, L, S, U, L, VT, K);
-
-    // Reconstruction using eigentriples
-    // (\lambda_i, Ui, V_i), 1 <= i <= Rmax
-    for (q = 1; q <= K; q++) {
-	for (p = 1; p <= L; p++) {
-	    rtmp = 0.0;
-	    for (i = 1; i <= Rmax; i++) {
-		rtmp = rtmp + U[(p - 1) + (i - 1) * ldu] * S[i - 1] * VT[(i - 1) + (q - 1) * ldvt];
-	    }
-	    Ystar[(p - 1) + (q - 1) * ldystar] = rtmp;
-	}
-    }
-
-    // Hankelization (or diagonal averaging) [eq. (2.4)]
-    for (k = 1; k <= L; k++) {
-	rtmp = 0.0;
-	for (j = 1; j <= k; j++) {
-	    rtmp = rtmp + Ystar[j - 1 + (k - j) * ldystar];
-	}
-	xtilde[k - 1] = rtmp / double (k);
-    }
-    for (k = L; k < K; k++) {
-	rtmp = 0.0;
-	for (j = 1; j <= L; j++) {
-	    rtmp = rtmp + Ystar[j - 1 + (k - j) * ldystar];
-	}
-	xtilde[k - 1] = rtmp / double (L);
-    }
-    for (k = K; k <= N; k++) {
-	rtmp = 0.0;
-	for (j = k - K + 1; j <= L; j++) {
-	    rtmp = rtmp + Ystar[j - 1 + (k - j) * ldystar];
-	}
-	xtilde[k - 1] = rtmp / double (N - k + 1);
-    }
-
-    delete[]S;
-    delete[]VT;
-    delete[]U;
-    delete[]Ystar;
-    delete[]X;
-}
-
 // Do Basic Singular Spectrum Analysis for a time series using PROPACK
 // x is real-valued time series (x_1, x_2, \cdots, x_N) of length N.
 // L is the window length, K = L - N + 1;
@@ -465,3 +394,75 @@ _DLLAPI void __stdcall fastSingular(double *x, int N, int L, int Rmax, double *x
 {
     BasicSSA(x, N, L, Rmax, xtilde);
 }
+
+// Do Basic Singular Spectrum Analysis for a time series using LAPACK
+// x is real-valued time series (x_1, x_2, \cdots, x_N) of length N.
+// L is the window length, K = N - L + 1;
+// xtilde is reconstructed series.
+// this BasicSSA is not fast; do full SVD via LAPACK and do not employ Hankel structure of matrix.
+_DLLAPI void __stdcall BasicSSA_LAPACK(double *x, int N, int L, int Rmax, double *xtilde)
+{
+    int K = N - L + 1;
+    int i, j, k;
+    int p, q;
+    double *X = new double[L * K];
+    double *Ystar = new double[L * K];
+    double *U = new double[L * L];
+    double *VT = new double[K * K];
+    double *S = new double[L];
+    double rtmp;
+    int ldx = L, ldystar = L, ldu = L, ldvt = K;
+
+    //construct L-trajectory matrix [eq. (2.1)]
+    for (j = 1; j <= K; j++) {
+	for (i = 1; i <= L; i++) {
+	    X[(i - 1) + (j - 1) * ldx] = x[(i - 1) + (j - 1)];
+	}
+    }
+
+    // Do singular value decomposition of trajectory matrix.
+    // implicitly correspond to [eq. (2.2)]
+    LAPACKE_dgesdd(LAPACK_COL_MAJOR, 'A', L, K, X, L, S, U, L, VT, K);
+
+    // Reconstruction using eigentriples
+    // (\lambda_i, Ui, V_i), 1 <= i <= Rmax
+    for (q = 1; q <= K; q++) {
+	for (p = 1; p <= L; p++) {
+	    rtmp = 0.0;
+	    for (i = 1; i <= Rmax; i++) {
+		rtmp = rtmp + U[(p - 1) + (i - 1) * ldu] * S[i - 1] * VT[(i - 1) + (q - 1) * ldvt];
+	    }
+	    Ystar[(p - 1) + (q - 1) * ldystar] = rtmp;
+	}
+    }
+
+    // Hankelization (or diagonal averaging) [eq. (2.4)]
+    for (k = 1; k <= L; k++) {
+	rtmp = 0.0;
+	for (j = 1; j <= k; j++) {
+	    rtmp = rtmp + Ystar[j - 1 + (k - j) * ldystar];
+	}
+	xtilde[k - 1] = rtmp / double (k);
+    }
+    for (k = L; k < K; k++) {
+	rtmp = 0.0;
+	for (j = 1; j <= L; j++) {
+	    rtmp = rtmp + Ystar[j - 1 + (k - j) * ldystar];
+	}
+	xtilde[k - 1] = rtmp / double (L);
+    }
+    for (k = K; k <= N; k++) {
+	rtmp = 0.0;
+	for (j = k - K + 1; j <= L; j++) {
+	    rtmp = rtmp + Ystar[j - 1 + (k - j) * ldystar];
+	}
+	xtilde[k - 1] = rtmp / double (N - k + 1);
+    }
+
+    delete[]S;
+    delete[]VT;
+    delete[]U;
+    delete[]Ystar;
+    delete[]X;
+}
+
