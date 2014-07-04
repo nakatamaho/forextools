@@ -67,6 +67,9 @@ _DLLAPI void __stdcall BasicSSA_LAPACK(double *x, int N, int L, int Rmax, double
 _DLLAPI void __stdcall fastsingular(double *x, int N, int L, int Rmax, double *xtilde);
 _DLLAPI void __stdcall fastSingular(double *x, int N, int L, int Rmax, double *xtilde);
 
+void FastSSAMatVecMult(double *F, int N, int L, double *v, double *p);
+void FastSSAMatTransVecMult(double *F, int N, int L, double *v, double *p);
+
 int Mlsame(const char *a, const char *b)
 {
     if (toupper(*a) == toupper(*b))
@@ -183,8 +186,8 @@ _DLLAPI void __stdcall BasicSSA(double *x, int N, int L, int Rmax, double *xtild
 
     int ldx = L, ldystar = L, ldu = L, ldv = K;
     double tolin = 1e-12;
-    int nb = 64;		//block
-    int kmax = 1000;		//maximum itration number
+    int nb = 128;		//block
+    int kmax = K * 3; 		//maximum itration number
     int lwork = L + K + 9 * kmax + 5 * kmax * kmax + 4 + std::max(3 * kmax * kmax + 4 * kmax + 4, nb * std::max(L, K));
 
     double *work = new double[lwork];
