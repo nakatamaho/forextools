@@ -26,7 +26,7 @@ LIBSSA		= libSSA4FX
 LAPACKLIB       = $(MSYSHOME)/local/lib/libopenblas.a
 PROPACKLIB      = libdpropack_MINGW32.a
 #LAPACKLIB       = $(MSYSHOME)/local/lib/liblapacke.a $(MSYSHOME)/local/lib/liblapack.a $(MSYSHOME)/local/lib/libblas.a -lgfortran
-FFTWLIB         = -L$(MSYSHOME)/local/lib -Wl,-Bstatic -lfftw3 -lm
+FFTWLIB         = $(MSYSHOME)/local/lib/libfftw3.a $(MINGWHOME)/lib/libm.a
 STATICALIZER    = -static -lgfortran -static-libgfortran -static-libgcc
 
 .SUFFIXES: .mq4 .ex4
@@ -39,7 +39,7 @@ all: $(INDICATORs) $(LIBSSA).dll
 
 $(LIBSSA).dll: $(LIBSSA).cpp
 	$(CXX) -I$(MSYSHOME)/local/include -O2 -shared -c $(LIBSSA).cpp
-	$(CXX) -shared -o $(LIBSSA).dll $(LIBSSA).o $(PROPACKLIB) $(LAPACKLIB) $(FFTWLIB) $(STATICALIZER) -Wl,--kill-at,--output-def,$(LIBSSA).def,--out-implib,$(LIBSSA).a
+	$(CXX) -Wall -shared -o $(LIBSSA).dll $(LIBSSA).o $(PROPACKLIB) $(LAPACKLIB) $(FFTWLIB) $(STATICALIZER) -Wl,--kill-at,--output-def,$(LIBSSA).def,--out-implib,$(LIBSSA).a
 	objdump.exe -p $(LIBSSA).dll | grep "\.dll"
 
 install:

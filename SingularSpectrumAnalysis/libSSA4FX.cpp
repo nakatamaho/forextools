@@ -103,7 +103,7 @@ _DLLAPI void __stdcall BasicSSA(double *x, int N, int L, int Rmax, double *xtild
     int K = N - L + 1;
     int i, j, k, p, q;
 
-    int ldx = L, ldystar = L, ldu = L, ldv = K;
+    int ldx = L, ldu = L, ldv = K;
     double tolin = 1e-9;
     int nb = 128;		//block
     int kmax = K * 3;		//maximum itration number
@@ -128,7 +128,6 @@ _DLLAPI void __stdcall BasicSSA(double *x, int N, int L, int Rmax, double *xtild
     ioption[1] = 1;
 
     double *X = new double[K * L];
-    double *Ystar = new double[K * L];
     double *U = new double[L * kmax];
     double *V = new double[K * kmax];
     double *S = new double[Rmax];
@@ -160,7 +159,6 @@ _DLLAPI void __stdcall BasicSSA(double *x, int N, int L, int Rmax, double *xtild
     delete[]S;
     delete[]V;
     delete[]U;
-    delete[]Ystar;
     delete[]X;
 }
 

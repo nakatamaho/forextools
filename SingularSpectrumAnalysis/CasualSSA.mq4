@@ -49,7 +49,7 @@ void BasicSSA(double &x[], int N, int L, int Rmax, double &xtilde[]);
 void BasicSSA_2(double &x[], int N, int L, double threshold, double &xtilde[]);
 #import
 
-input int TotalLength = 300;
+input int TotalLength = 256;
 input int WindowLength = 30;
 input int Rmax = 3;
 input double threshold = 2.0;
@@ -92,9 +92,10 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 {
     int i, j, k;
     int limit = prev_calculated;
-    if (rates_total <= TotalLength * 2)
+    if (rates_total <= TotalLength * 2) {
+        Print ("Error rates_total is too small");
 	return (0);
-
+    }
     if(prev_calculated > 0) limit--;
 
     ArraySetAsSeries(ExtBuffer, true);
