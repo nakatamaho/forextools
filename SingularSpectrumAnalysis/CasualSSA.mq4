@@ -65,9 +65,12 @@ double UpLine[];
 double DnLine[];
 double UpArrow[];
 double DnArrow[];
+int alert_barcounter;
 
 int OnInit(void)
 {
+    alert_barcounter = 0;
+
     IndicatorBuffers(5);
     IndicatorDigits(Digits);
 
@@ -95,14 +98,14 @@ int OnInit(void)
     SetIndexShift(3, 0);
     SetIndexDrawBegin(3, TotalLength);
     ArraySetAsSeries(UpArrow, true);
-    SetIndexArrow(3,233);
+    SetIndexArrow(3, 233);
 
     SetIndexStyle(4, DRAW_ARROW);
     SetIndexBuffer(4, DnArrow);
     SetIndexShift(4, 0);
     SetIndexDrawBegin(4, TotalLength);
     ArraySetAsSeries(DnArrow, true);
-    SetIndexArrow(4,234);
+    SetIndexArrow(4, 234);
 
     return (INIT_SUCCEEDED);
 }
@@ -112,9 +115,7 @@ void OnDeinit(const int reason)
     //IndicatorRelease(MA_handle);
 }
 
-int OnCalculate(const int rates_total, const int prev_calculated, const datetime & time[],
-		const double &open[], const double &high[], const double &low[], const double &close[], const long &tick_volume[],
-		const long &volume[], const int &spread[])
+int OnCalculate(const int rates_total, const int prev_calculated, const datetime & time[], const double &open[], const double &high[], const double &low[], const double &close[], const long &tick_volume[], const long &volume[], const int &spread[])
 {
     int i, j;
     int limit = rates_total - prev_calculated;
@@ -132,7 +133,7 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
     ArrayResize(SSABuffer, TotalLength);
     ArrayResize(PriceBuffer, TotalLength);
 
-    for (i = limit-1; i >= 0; i--) {
+    for (i = limit - 1; i >= 0; i--) {
 	for (j = TotalLength - 1; j >= 0; j--) {
 	    if (isMA) {
 		PriceBuffer[j] = iMA(NULL, 0, MA_Period, 0, MODE_EMA, PRICE_CLOSE, i + j);
@@ -144,7 +145,7 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 	ExtBuffer[i] = SSABuffer[0];
     }
 
-    for (i = limit-1; i >= 0; i--) {
+    for (i = limit - 1; i >= 0; i--) {
 	if (ExtBuffer[i] >= ExtBuffer[i + 1]) {
 	    UpLine[i] = ExtBuffer[i];
 	    DnLine[i] = EMPTY_VALUE;
@@ -157,13 +158,25 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 	if (DnLine[i] != EMPTY_VALUE && DnLine[i + 1] == EMPTY_VALUE)
 	    DnLine[i + 1] = ExtBuffer[i + 1];
     }
-    for (i = limit-1; i >= 0; i--) {
+    for (i = limit - 1; i >= 0; i--) {
 	UpArrow[i] = EMPTY_VALUE;
 	DnArrow[i] = EMPTY_VALUE;
 	if (UpLine[i + 1] != EMPTY_VALUE && UpLine[i] == EMPTY_VALUE)
 	    DnArrow[i] = ExtBuffer[i];
 	if (DnLine[i + 1] != EMPTY_VALUE && DnLine[i] == EMPTY_VALUE)
 	    UpArrow[i] = ExtBuffer[i];
+    }
+    if (UpLine[1] != EMPTY_VALUE && UpLine[2] == EMPTY_VALUE) {
+	if (rates_total > alert_barcounter) {
+	    Print("CasualSSA: ", Symbol(), " ", Period(), ":Timeframe,  BUY @", Ask, " ", TimeGMT());
+	    alert_barcounter = rates_total;
+	}
+    }
+    if (DnLine[1] != EMPTY_VALUE && DnLine[2] == EMPTY_VALUE) {
+	if (rates_total > alert_barcounter) {
+	    Print("CasualSSA: ", Symbol(), " ", Period(), ":Timeframe, SELL @", Ask, " ", TimeGMT());
+	    alert_barcounter = rates_total;
+	}
     }
     return (rates_total);
 }
