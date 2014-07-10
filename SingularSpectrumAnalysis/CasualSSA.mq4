@@ -32,16 +32,20 @@ either expressed or implied, of NAKATA Maho.
 #property strict
 
 #property indicator_chart_window
-#property indicator_buffers 3
-#property indicator_color1 DeepPink
+#property indicator_buffers 5
+#property indicator_color1 Black
 #property indicator_color2 Blue
 #property indicator_color3 Red
+#property indicator_color4 LimeGreen
+#property indicator_color5 DarkOrange
 #property indicator_style1 STYLE_SOLID
 #property indicator_style2 STYLE_SOLID
 #property indicator_style3 STYLE_SOLID
-#property indicator_width1 3
+#property indicator_width1 1
 #property indicator_width2 4
 #property indicator_width3 4
+#property indicator_width4 2
+#property indicator_width5 2
 
 #import "libSSA4FX.dll"
 void BasicSSA(double &x[], int N, int L, int Rmax, double &xtilde[]);
@@ -59,10 +63,12 @@ double ExtBuffer[];
 double PriceBuffer[];
 double UpLine[];
 double DnLine[];
+double UpArrow[];
+double DnArrow[];
 
 int OnInit(void)
 {
-    IndicatorBuffers(3);
+    IndicatorBuffers(5);
     IndicatorDigits(Digits);
 
     SetIndexStyle(0, DRAW_LINE);
@@ -84,6 +90,20 @@ int OnInit(void)
     SetIndexDrawBegin(2, TotalLength);
     ArraySetAsSeries(DnLine, true);
 
+    SetIndexStyle(3, DRAW_ARROW);
+    SetIndexBuffer(3, UpArrow);
+    SetIndexShift(3, 0);
+    SetIndexDrawBegin(3, TotalLength);
+    ArraySetAsSeries(UpArrow, true);
+    SetIndexArrow(3,233);
+
+    SetIndexStyle(4, DRAW_ARROW);
+    SetIndexBuffer(4, DnArrow);
+    SetIndexShift(4, 0);
+    SetIndexDrawBegin(4, TotalLength);
+    ArraySetAsSeries(DnArrow, true);
+    SetIndexArrow(4,234);
+
     return (INIT_SUCCEEDED);
 }
 
@@ -96,7 +116,7 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 		const double &open[], const double &high[], const double &low[], const double &close[], const long &tick_volume[],
 		const long &volume[], const int &spread[])
 {
-    int i, j, k;
+    int i, j;
     int limit = rates_total - prev_calculated;
     if (rates_total <= TotalLength * 2) {
 	printf("Error # of rates_total is too small (%d).", rates_total);
@@ -136,6 +156,14 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 	    UpLine[i + 1] = ExtBuffer[i + 1];
 	if (DnLine[i] != EMPTY_VALUE && DnLine[i + 1] == EMPTY_VALUE)
 	    DnLine[i + 1] = ExtBuffer[i + 1];
+    }
+    for (i = limit-1; i >= 0; i--) {
+	UpArrow[i] = EMPTY_VALUE;
+	DnArrow[i] = EMPTY_VALUE;
+	if (UpLine[i + 1] != EMPTY_VALUE && UpLine[i] == EMPTY_VALUE)
+	    DnArrow[i] = ExtBuffer[i];
+	if (DnLine[i + 1] != EMPTY_VALUE && DnLine[i] == EMPTY_VALUE)
+	    UpArrow[i] = ExtBuffer[i];
     }
     return (rates_total);
 }
