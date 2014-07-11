@@ -52,7 +52,11 @@ void BasicSSA(double &x[], int N, int L, int Rmax, double &xtilde[]);
 #import
 
 input int TotalLength = 512;
-input int WindowLength = 120;
+input int WindowLength = 60;
+input int MaxWindowLength = 120;
+input int MinWindowLength = 30;
+input int CheckLength = 12;
+
 input int Rmax = 2;
 input double threshold = 2.0;
 input int isMA = 1;
@@ -65,12 +69,11 @@ double UpLine[];
 double DnLine[];
 double UpArrow[];
 double DnArrow[];
-int alert_barcounter;
+int barcounter4calculation;
 
 int OnInit(void)
 {
-    alert_barcounter = 0;
-
+    barcounter4calculation = 0;
     IndicatorBuffers(5);
     IndicatorDigits(Digits);
 
@@ -119,6 +122,9 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 {
     int i, j;
     int limit = rates_total - prev_calculated;
+    //Calculation shold be done on the first tick of the new bar.
+    if (rates_total == barcounter4calculation) return (rates_total);
+
     if (rates_total <= TotalLength * 2) {
 	printf("Error # of rates_total is too small (%d).", rates_total);
 	return (0);
@@ -144,7 +150,18 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 	BasicSSA(PriceBuffer, TotalLength, WindowLength, Rmax, SSABuffer);
 	ExtBuffer[i] = SSABuffer[0];
     }
-
+    double l1norm = 0.0;
+    for (i = CheckLength - 1; i >= 0; i--) {
+         l1norm =l1norm + MathAbs(close [i] - ExtBuffer[i]);
+    }
+    printf ("l1norm %lf", l1norm * 1000.0);
+/*
+    l1norm = l1norm * 1000.0;
+    if (l1norm > 5.0) WindowLength = WindowLength - 5;
+    if (l1norm < 5.0) WindowLength = WindowLength + 5;
+    if (WindowLength < 20 ) WindowLength = 20;
+    if (WindowLength > 120 ) WindowLength = 120;
+*/
     for (i = limit - 1; i >= 0; i--) {
 	if (ExtBuffer[i] >= ExtBuffer[i + 1]) {
 	    UpLine[i] = ExtBuffer[i];
@@ -167,16 +184,17 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 	    UpArrow[i] = ExtBuffer[i];
     }
     if (UpLine[1] != EMPTY_VALUE && UpLine[2] == EMPTY_VALUE) {
-	if (rates_total > alert_barcounter) {
+	if (rates_total > barcounter4calculation) {
 	    Print("CasualSSA: ", Symbol(), " ", Period(), ":Timeframe,  BUY @", Ask, " ", TimeGMT());
-	    alert_barcounter = rates_total;
+	    barcounter4calculation = rates_total;
 	}
     }
     if (DnLine[1] != EMPTY_VALUE && DnLine[2] == EMPTY_VALUE) {
-	if (rates_total > alert_barcounter) {
+	if (rates_total > barcounter4calculation) {
 	    Print("CasualSSA: ", Symbol(), " ", Period(), ":Timeframe, SELL @", Ask, " ", TimeGMT());
-	    alert_barcounter = rates_total;
+	    barcounter4calculation = rates_total;
 	}
     }
+    barcounter4calculation = rates_total;
     return (rates_total);
 }
