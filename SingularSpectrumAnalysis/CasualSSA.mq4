@@ -49,7 +49,23 @@ either expressed or implied, of NAKATA Maho.
 
 #import "libSSA4FX.dll"
 void BasicSSA(double &x[], int N, int L, int Rmax, double &xtilde[]);
+void BasicSSA_LAPACK(double &x[], int N, int L, int Rmax, double &xtilde[]);
 #import
+
+enum IS_USE_MA{
+  USE_MA,
+  DONOT_USE_MA,
+};
+
+enum SVD_METHOD{
+  PROPACK,
+  LAPACK,
+};
+
+enum PUSH_NOTIFICATION{
+  USE_PUSH_NOTIFICATION,
+  DONOT_USE_PUSH_NOTIFICATION,
+};
 
 input int TotalLength = 512;
 input int WindowLength = 60;
@@ -59,7 +75,9 @@ input int CheckLength = 12;
 
 input int Rmax = 2;
 input double threshold = 2.0;
-input int isMA = 1;
+input IS_USE_MA use_ma = USE_MA;
+input SVD_METHOD svd_method = PROPACK;
+input PUSH_NOTIFICATION push_notification = USE_PUSH_NOTIFICATION;
 input int MA_Period = 2;
 
 double SSABuffer[];
@@ -122,6 +140,7 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 {
     int i, j;
     int limit = rates_total - prev_calculated;
+    string notification_message;
     //Calculation shold be done on the first tick of the new bar.
     if (rates_total == barcounter4calculation) return (rates_total);
 
@@ -141,21 +160,26 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 
     for (i = limit - 1; i >= 0; i--) {
 	for (j = TotalLength - 1; j >= 0; j--) {
-	    if (isMA) {
+	    if (use_ma == USE_MA) {
 		PriceBuffer[j] = iMA(NULL, 0, MA_Period, 0, MODE_EMA, PRICE_CLOSE, i + j);
 	    } else {
 		PriceBuffer[j] = close[j + i];
 	    }
 	}
-	BasicSSA(PriceBuffer, TotalLength, WindowLength, Rmax, SSABuffer);
+	if (svd_method == PROPACK) {
+	    BasicSSA(PriceBuffer, TotalLength, WindowLength, Rmax, SSABuffer);
+        } else {
+	    BasicSSA_LAPACK(PriceBuffer, TotalLength, WindowLength, Rmax, SSABuffer);
+        }
 	ExtBuffer[i] = SSABuffer[0];
     }
+/*
     double l1norm = 0.0;
     for (i = CheckLength - 1; i >= 0; i--) {
          l1norm =l1norm + MathAbs(close [i] - ExtBuffer[i]);
     }
     printf ("l1norm %lf", l1norm * 1000.0);
-/*
+
     l1norm = l1norm * 1000.0;
     if (l1norm > 5.0) WindowLength = WindowLength - 5;
     if (l1norm < 5.0) WindowLength = WindowLength + 5;
@@ -185,13 +209,13 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
     }
     if (UpLine[1] != EMPTY_VALUE && UpLine[2] == EMPTY_VALUE) {
 	if (rates_total > barcounter4calculation) {
-	    Print("CasualSSA: ", Symbol(), " ", Period(), ":Timeframe,  BUY @", Ask, " ", TimeGMT());
+	    printf("CasualSSA: %s, %d Timeframe, BUY @%g %s",Symbol(), Period(), Bid, TimeToStr(TimeGMT()));
 	    barcounter4calculation = rates_total;
 	}
     }
     if (DnLine[1] != EMPTY_VALUE && DnLine[2] == EMPTY_VALUE) {
 	if (rates_total > barcounter4calculation) {
-	    Print("CasualSSA: ", Symbol(), " ", Period(), ":Timeframe, SELL @", Ask, " ", TimeGMT());
+            printf("CasualSSA: %s, %d Timeframe, SELL @%g %s", Symbol(), Period(), Ask, TimeToStr(TimeGMT()));
 	    barcounter4calculation = rates_total;
 	}
     }
