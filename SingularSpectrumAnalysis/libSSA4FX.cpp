@@ -267,12 +267,12 @@ void RankOneHankelization(double *u, int L, double *v, int K, double sigma, doub
     for (i = 1; i <= K; i++) vtilde[i - 1] = v[i - 1];
     for (i = K + 1; i <= N; i++) vtilde[i - 1] = 0.0;
 
-    fftw_plan x = fftw_plan_dft_r2c_1d(N, utilde, reinterpret_cast <fftw_complex *>(uhat), FFTW_ESTIMATE | FFTW_UNALIGNED);
-    fftw_plan y = fftw_plan_dft_r2c_1d(N, vtilde, reinterpret_cast <fftw_complex *>(vhat), FFTW_ESTIMATE | FFTW_UNALIGNED);
+    fftw_plan x = fftw_plan_dft_r2c_1d(N, utilde, reinterpret_cast <fftw_complex *>(uhat), FFTW_ESTIMATE);
+    fftw_plan y = fftw_plan_dft_r2c_1d(N, vtilde, reinterpret_cast <fftw_complex *>(vhat), FFTW_ESTIMATE);
     fftw_execute(x);
     fftw_execute(y);
     for (i = 1; i <= N; i++) ghat[i - 1] = vhat[i - 1] * uhat[i - 1] / double (N);
-    fftw_plan z = fftw_plan_dft_c2r_1d(N, reinterpret_cast <fftw_complex *>(ghat), gprime, FFTW_ESTIMATE | FFTW_UNALIGNED);
+    fftw_plan z = fftw_plan_dft_c2r_1d(N, reinterpret_cast <fftw_complex *>(ghat), gprime, FFTW_ESTIMATE);
     fftw_execute(z);
 
     for (i = 1; i <= L; i++) w[i - 1] = 1.0 / double (i);
