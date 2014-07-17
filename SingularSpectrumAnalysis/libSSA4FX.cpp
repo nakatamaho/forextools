@@ -78,6 +78,20 @@ int Mlsame(const char *a, const char *b)
     return 0;
 }
 
+void FastSSAHankelMatVecMul(char *transa, int *m, int *n, double *x, double *y, double *dparm, int *iparm)
+{
+    int L = (*m);
+    int N = iparm[0];
+    if (Mlsame(transa, "N")) {
+        FastSSAMatVecMult(dparm, N, L, x, y);
+	return;
+    }
+    if (Mlsame(transa, "T")) {
+        FastSSAMatTransVecMult(dparm, N, L, x, y);
+	return;
+    }
+}
+
 void matvecprod_dense(char *transa, int *m, int *n, double *x, double *y, double *dparm, int *iparm)
 {
     int i, j;
@@ -114,7 +128,7 @@ _DLLAPI void __stdcall BasicSSA(double *x, int N, int L, int Rmax, double *xtild
     int *iwork = new int[liwork];
     int info;
     int *iparm = new int[1];
-    iparm[0] = L;		//lda;
+    iparm[0] = N; //total length
     double *doption = new double[3];
     int *ioption = new int[2];
     double eps = 1e-15;		//dlamch('e')
@@ -134,14 +148,7 @@ _DLLAPI void __stdcall BasicSSA(double *x, int N, int L, int Rmax, double *xtild
     double *bnd = new double[Rmax];
     double rtmp;
 
-    //construct L-trajectory matrix [eq. (2.1)]
-    for (j = 1; j <= K; j++) {
-	for (i = 1; i <= L; i++) {
-	    X[(i - 1) + (j - 1) * ldx] = x[(i - 1) + (j - 1)];
-	}
-    }
-
-    dlansvd_f77(&jobu, &jobv, &L, &K, &Rmax, &kmax, matvecprod_dense, U, &ldu, S, bnd, V, &ldv, &tolin, work, &lwork, iwork, &liwork, doption, ioption, &info, X, iparm);
+    dlansvd_f77(&jobu, &jobv, &L, &K, &Rmax, &kmax, FastSSAHankelMatVecMul, U, &ldu, S, bnd, V, &ldv, &tolin, work, &lwork, iwork, &liwork, doption, ioption, &info, x, iparm);
 
     RankOneHankelization(U, L, V, K, S[0], xtilde, N);
     double *g = new double[N];
