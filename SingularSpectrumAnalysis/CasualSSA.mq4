@@ -209,13 +209,17 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
     }
     if (UpLine[1] != EMPTY_VALUE && UpLine[2] == EMPTY_VALUE) {
 	if (rates_total > barcounter4calculation) {
-	    printf("CasualSSA: %s, %d Timeframe, BUY @%g %s",Symbol(), Period(), Bid, TimeToStr(TimeGMT()));
+	    notification_message = StringFormat("CasualSSA: %s, %d Timeframe, BUY @%g %s",Symbol(), Period(), Bid, TimeToStr(TimeGMT()));
+	    Print(notification_message);
+	    if (push_notification == USE_PUSH_NOTIFICATION) SendNotification(notification_message);
 	    barcounter4calculation = rates_total;
 	}
     }
     if (DnLine[1] != EMPTY_VALUE && DnLine[2] == EMPTY_VALUE) {
 	if (rates_total > barcounter4calculation) {
-            printf("CasualSSA: %s, %d Timeframe, SELL @%g %s", Symbol(), Period(), Ask, TimeToStr(TimeGMT()));
+            notification_message = StringFormat("CasualSSA: %s, %d Timeframe, SELL @%g %s", Symbol(), Period(), Ask, TimeToStr(TimeGMT()));
+	    Print(notification_message);
+	    if (push_notification == USE_PUSH_NOTIFICATION) SendNotification(notification_message);
 	    barcounter4calculation = rates_total;
 	}
     }
