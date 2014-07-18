@@ -67,18 +67,22 @@ enum PUSH_NOTIFICATION{
   DONOT_USE_PUSH_NOTIFICATION,
 };
 
+enum ADAPTATION{
+  USE_ADAPTATION,
+  DONOT_USE_ADAPTATION,
+};
+
 input int TotalLength = 512;
 input int WindowLength = 60;
-input int MaxWindowLength = 120;
-input int MinWindowLength = 30;
 input int CheckLength = 12;
 
 input int Rmax = 2;
-input double threshold = 2.0;
 input IS_USE_MA use_ma = USE_MA;
 input SVD_METHOD svd_method = PROPACK;
 input PUSH_NOTIFICATION push_notification = USE_PUSH_NOTIFICATION;
+input ADAPTATION adaptation = DONOT_USE_ADAPTATION;
 input int MA_Period = 2;
+input int STEALTH_MODE = 0;
 
 double SSABuffer[];
 double ExtBuffer[];
@@ -88,10 +92,12 @@ double DnLine[];
 double UpArrow[];
 double DnArrow[];
 int barcounter4calculation;
+int _WindowLength;
 
 int OnInit(void)
 {
     barcounter4calculation = 0;
+    _WindowLength = WindowLength;
     IndicatorBuffers(5);
     IndicatorDigits(Digits);
 
@@ -167,24 +173,24 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 	    }
 	}
 	if (svd_method == PROPACK) {
-	    BasicSSA(PriceBuffer, TotalLength, WindowLength, Rmax, SSABuffer);
+	    BasicSSA(PriceBuffer, TotalLength, _WindowLength, Rmax, SSABuffer);
         } else {
-	    BasicSSA_LAPACK(PriceBuffer, TotalLength, WindowLength, Rmax, SSABuffer);
+	    BasicSSA_LAPACK(PriceBuffer, TotalLength, _WindowLength, Rmax, SSABuffer);
         }
 	ExtBuffer[i] = SSABuffer[0];
+   
     }
 /*
-    double l1norm = 0.0;
-    for (i = CheckLength - 1; i >= 0; i--) {
-         l1norm =l1norm + MathAbs(close [i] - ExtBuffer[i]);
+        if (adaptation == USE_ADAPTATION) {
+        double RMSE = 0.0;
+        for (i = CheckLength - 1; i >= 0; i--) {
+            RMSE = RMSE + (close [i] - ExtBuffer[i]) * (close [i] - ExtBuffer[i]);
+        }
+        RMSE = MathSqrt (RMSE / (double)CheckLength) * 1000.0;
+        if (RMSE > 0.8)  if (_WindowLength > 30) _WindowLength = _WindowLength - 5;
+        if (RMSE <= 0.8) if (_WindowLength < 120) _WindowLength = _WindowLength + 5;
+        printf ("WindowLength : %g RMSE %g", _WindowLength, RMSE);
     }
-    printf ("l1norm %lf", l1norm * 1000.0);
-
-    l1norm = l1norm * 1000.0;
-    if (l1norm > 5.0) WindowLength = WindowLength - 5;
-    if (l1norm < 5.0) WindowLength = WindowLength + 5;
-    if (WindowLength < 20 ) WindowLength = 20;
-    if (WindowLength > 120 ) WindowLength = 120;
 */
     for (i = limit - 1; i >= 0; i--) {
 	if (ExtBuffer[i] >= ExtBuffer[i + 1]) {
@@ -209,17 +215,29 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
     }
     if (UpLine[1] != EMPTY_VALUE && UpLine[2] == EMPTY_VALUE) {
 	if (rates_total > barcounter4calculation) {
-	    notification_message = StringFormat("CasualSSA: %s, %d Timeframe, BUY @%g %s",Symbol(), Period(), Bid, TimeToStr(TimeGMT()));
-	    Print(notification_message);
-	    if (push_notification == USE_PUSH_NOTIFICATION) SendNotification(notification_message);
+	    if (STEALTH_MODE == 0) {
+                double _UpLine = iCustom (NULL, PERIOD_H1, "CasualSSA", 256, 30, CheckLength, Rmax, USE_MA, PROPACK, DONOT_USE_PUSH_NOTIFICATION, DONOT_USE_ADAPTATION, MA_Period, 1, 1, 1);
+	        if (_UpLine != EMPTY_VALUE) 
+	           notification_message = StringFormat("CasualSSA: %s, %d Timeframe, STRONG BUY @%g %s",Symbol(), Period(), Bid, TimeToStr(TimeGMT()));
+                else
+  	           notification_message = StringFormat("CasualSSA: %s, %d Timeframe, BUY @%g %s",Symbol(), Period(), Bid, TimeToStr(TimeGMT()));
+	        Print(notification_message);
+	        if (push_notification == USE_PUSH_NOTIFICATION) SendNotification(notification_message);
+            }
 	    barcounter4calculation = rates_total;
 	}
     }
     if (DnLine[1] != EMPTY_VALUE && DnLine[2] == EMPTY_VALUE) {
 	if (rates_total > barcounter4calculation) {
-            notification_message = StringFormat("CasualSSA: %s, %d Timeframe, SELL @%g %s", Symbol(), Period(), Ask, TimeToStr(TimeGMT()));
-	    Print(notification_message);
-	    if (push_notification == USE_PUSH_NOTIFICATION) SendNotification(notification_message);
+	    if (STEALTH_MODE == 0) {
+                double _DnLine = iCustom (NULL, PERIOD_H1, "CasualSSA", 256, 30, CheckLength, Rmax, USE_MA, PROPACK, DONOT_USE_PUSH_NOTIFICATION, DONOT_USE_ADAPTATION, MA_Period, 1, 2, 1);
+	        if (_DnLine != EMPTY_VALUE) 
+                    notification_message = StringFormat("CasualSSA: %s, %d Timeframe, STRONG SELL @%g %s", Symbol(), Period(), Ask, TimeToStr(TimeGMT()));
+                else
+                    notification_message = StringFormat("CasualSSA: %s, %d Timeframe, SELL @%g %s", Symbol(), Period(), Ask, TimeToStr(TimeGMT()));
+	        Print(notification_message);
+   	        if (push_notification == USE_PUSH_NOTIFICATION) SendNotification(notification_message);
+            }
 	    barcounter4calculation = rates_total;
 	}
     }
