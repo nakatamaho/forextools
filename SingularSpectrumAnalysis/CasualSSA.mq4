@@ -82,7 +82,7 @@ input SVD_METHOD svd_method = PROPACK;
 input PUSH_NOTIFICATION push_notification = USE_PUSH_NOTIFICATION;
 input ADAPTATION adaptation = DONOT_USE_ADAPTATION;
 input int MA_Period = 2;
-input int MaxBars = 2048;
+input int MaxBars = -1;
 input int STEALTH_MODE = 0;
 
 double SSABuffer[];
@@ -157,7 +157,7 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
     }
     if (rates_total - TotalLength < limit) limit = rates_total - TotalLength;
     if (limit == 0) limit = 1;
-    if (limit > MaxBars) limit = MaxBars;
+    if (MaxBars != -1) if (limit > MaxBars) limit = MaxBars;
 
     //Period for two different time scales
     int __Period = 0; 
@@ -199,7 +199,7 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
         printf ("WindowLength : %g RMSE %g", _WindowLength, RMSE);
     }
 */
-    for (i = limit - 1; i >= 0; i--) {
+    for (i = limit - 1; i >= 1; i--) {
 	if (ExtBuffer[i] >= ExtBuffer[i + 1]) {
 	    UpLine[i] = ExtBuffer[i];
 	    DnLine[i] = EMPTY_VALUE;
@@ -212,7 +212,7 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 	if (DnLine[i] != EMPTY_VALUE && DnLine[i + 1] == EMPTY_VALUE)
 	    DnLine[i + 1] = ExtBuffer[i + 1];
     }
-    for (i = limit - 1; i >= 0; i--) {
+    for (i = limit - 1; i >= 1; i--) {
 	UpArrow[i] = EMPTY_VALUE;
 	DnArrow[i] = EMPTY_VALUE;
 	if (UpLine[i + 1] != EMPTY_VALUE && UpLine[i] == EMPTY_VALUE)
