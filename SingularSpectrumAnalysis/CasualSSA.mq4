@@ -148,6 +148,7 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
     int i, j;
     int limit = rates_total - prev_calculated;
     string notification_message;
+
     //Calculation shold be done on the first tick of the new bar.
     if (rates_total == barcounter4calculation) return (rates_total);
 
@@ -156,7 +157,7 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 	return (0);
     }
     if (rates_total - TotalLength < limit) limit = rates_total - TotalLength;
-    if (limit == 0) limit = 1;
+    if (limit < 2) limit = 2;
     if (MaxBars != -1) if (limit > MaxBars) limit = MaxBars;
 
     //Period for two different time scales
@@ -188,19 +189,6 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 	ExtBuffer[i] = SSABuffer[0];
     }
     ExtBuffer[0] = EMPTY_VALUE;
-
-/*
-        if (adaptation == USE_ADAPTATION) {
-        double RMSE = 0.0;
-        for (i = CheckLength - 1; i >= 0; i--) {
-            RMSE = RMSE + (close [i] - ExtBuffer[i]) * (close [i] - ExtBuffer[i]);
-        }
-        RMSE = MathSqrt (RMSE / (double)CheckLength) * 1000.0;
-        if (RMSE > 0.8)  if (_WindowLength > 30) _WindowLength = _WindowLength - 5;
-        if (RMSE <= 0.8) if (_WindowLength < 120) _WindowLength = _WindowLength + 5;
-        printf ("WindowLength : %g RMSE %g", _WindowLength, RMSE);
-    }
-*/
 
     /* Draw a trend line (red:down, blue:up) */
     for (i = limit - 1; i >= 1; i--) {
