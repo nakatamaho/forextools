@@ -171,12 +171,13 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
     ArrayResize(SSABuffer, TotalLength);
     ArrayResize(PriceBuffer, TotalLength);
 
-    for (i = limit - 1; i >= 0; i--) {
+    /* Main Loop: calculate Singular Spectrum Analysis values */
+    for (i = limit - 1; i >= 1; i--) {
 	for (j = TotalLength - 1; j >= 0; j--) {
 	    if (use_ma == USE_MA) {
-		PriceBuffer[j] = iMA(NULL, 0, MA_Period, 0, MODE_EMA, PRICE_CLOSE, i + j);
+		PriceBuffer[j] = iMA(NULL, 0, MA_Period, 0, MODE_EMA, PRICE_TYPICAL, i + j);
 	    } else {
-		PriceBuffer[j] = close[j + i];
+		PriceBuffer[j] = (high [j + i] + low [j + i ] + close[j + i]) / 3.0;
 	    }
 	}
 	if (svd_method == PROPACK) {
@@ -185,8 +186,9 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 	    BasicSSA_LAPACK(PriceBuffer, TotalLength, _WindowLength, Rmax, SSABuffer);
         }
 	ExtBuffer[i] = SSABuffer[0];
-   
     }
+    ExtBuffer[0] = EMPTY_VALUE;
+
 /*
         if (adaptation == USE_ADAPTATION) {
         double RMSE = 0.0;
@@ -199,6 +201,8 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
         printf ("WindowLength : %g RMSE %g", _WindowLength, RMSE);
     }
 */
+
+    /* Draw a trend line (red:down, blue:up) */
     for (i = limit - 1; i >= 1; i--) {
 	if (ExtBuffer[i] >= ExtBuffer[i + 1]) {
 	    UpLine[i] = ExtBuffer[i];
@@ -212,6 +216,8 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 	if (DnLine[i] != EMPTY_VALUE && DnLine[i + 1] == EMPTY_VALUE)
 	    DnLine[i + 1] = ExtBuffer[i + 1];
     }
+
+    /* Draw BUY/SELL arrow */
     for (i = limit - 1; i >= 1; i--) {
 	UpArrow[i] = EMPTY_VALUE;
 	DnArrow[i] = EMPTY_VALUE;
@@ -220,7 +226,10 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 	if (DnLine[i + 1] != EMPTY_VALUE && DnLine[i] == EMPTY_VALUE)
 	    UpArrow[i] = ExtBuffer[i];
     }
+    UpArrow[0] = EMPTY_VALUE;
+    DnArrow[0] = EMPTY_VALUE;
 
+    /* Check for BUY signal */
     if (UpLine[1] != EMPTY_VALUE && UpLine[2] == EMPTY_VALUE) {
 	if (rates_total > barcounter4calculation) {
 	    if (STEALTH_MODE == 0) {
@@ -234,6 +243,8 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 	    barcounter4calculation = rates_total;
 	}
     }
+
+    /* Check for SELL signal */
     if (DnLine[1] != EMPTY_VALUE && DnLine[2] == EMPTY_VALUE) {
 	if (rates_total > barcounter4calculation) {
 	    if (STEALTH_MODE == 0) {
@@ -248,5 +259,6 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 	}
     }
     barcounter4calculation = rates_total;
+
     return (rates_total);
 }
