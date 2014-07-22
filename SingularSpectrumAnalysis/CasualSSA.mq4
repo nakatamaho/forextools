@@ -82,8 +82,8 @@ input SVD_METHOD svd_method = PROPACK;
 input PUSH_NOTIFICATION push_notification = USE_PUSH_NOTIFICATION;
 input ADAPTATION adaptation = DONOT_USE_ADAPTATION;
 input int MA_Period = 2;
-input int MaxBars = -1;
-input int STEALTH_MODE = 0;
+input int MaxBars = -1; //-1 for infinity
+input int STEALTH_MODE = 0; //1 for check for the trend for the other timeframe
 
 double SSABuffer[];
 double ExtBuffer[];
