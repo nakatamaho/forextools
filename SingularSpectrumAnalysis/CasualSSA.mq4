@@ -18,7 +18,7 @@ INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
 LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
 PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+77;10103;0cOR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 The views and conclusions contained in the software and documentation are those
@@ -52,24 +52,24 @@ void BasicSSA(double &x[], int N, int L, int Rmax, double &xtilde[]);
 void BasicSSA_LAPACK(double &x[], int N, int L, int Rmax, double &xtilde[]);
 #import
 
-enum IS_USE_MA{
-  USE_MA,
-  DONOT_USE_MA,
+enum IS_USE_MA {
+    USE_MA,
+    DONOT_USE_MA,
 };
 
-enum SVD_METHOD{
-  PROPACK,
-  LAPACK,
+enum SVD_METHOD {
+    PROPACK,
+    LAPACK,
 };
 
-enum PUSH_NOTIFICATION{
-  USE_PUSH_NOTIFICATION,
-  DONOT_USE_PUSH_NOTIFICATION,
+enum PUSH_NOTIFICATION {
+    USE_PUSH_NOTIFICATION,
+    DONOT_USE_PUSH_NOTIFICATION,
 };
 
-enum ADAPTATION{
-  USE_ADAPTATION,
-  DONOT_USE_ADAPTATION,
+enum ADAPTATION {
+    USE_ADAPTATION,
+    DONOT_USE_ADAPTATION,
 };
 
 input int TotalLength = 512;
@@ -82,8 +82,8 @@ input SVD_METHOD svd_method = PROPACK;
 input PUSH_NOTIFICATION push_notification = USE_PUSH_NOTIFICATION;
 input ADAPTATION adaptation = DONOT_USE_ADAPTATION;
 input int MA_Period = 2;
-input int MaxBars = -1; //-1 for infinity
-input int STEALTH_MODE = 0; //1 for check for the trend for the other timeframe
+input int MaxBars = -1;		//-1 for infinity
+input int STEALTH_MODE = 0;	//1 for check for the trend for the other timeframe
 
 double SSABuffer[];
 double ExtBuffer[];
@@ -160,10 +160,11 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
     if (limit < 2) limit = 2;
     if (MaxBars != -1) if (limit > MaxBars) limit = MaxBars;
 
-    //Period for two different time scales
-    int __Period = 0; 
-    if (Period() == 5) __Period = 60;
-    if (Period() == 60) __Period = 5;
+    //Period and WindowLength for two different time scales
+    //XXX hardcoded XXX: Rewrite soon.
+    int __Period = 0, __WindowLength = 0;
+    if (Period() == 5) { __Period = 60; __WindowLength = 5; }
+    if (Period() == 60) { __Period = 5; __WindowLength = 30; }
 
     ArraySetAsSeries(SSABuffer, true);
     ArraySetAsSeries(PriceBuffer, true);
@@ -178,14 +179,14 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 	    if (use_ma == USE_MA) {
 		PriceBuffer[j] = iMA(NULL, 0, MA_Period, 0, MODE_EMA, PRICE_TYPICAL, i + j);
 	    } else {
-		PriceBuffer[j] = (high [j + i] + low [j + i ] + close[j + i]) / 3.0;
+		PriceBuffer[j] = (high[j + i] + low[j + i] + close[j + i]) / 3.0;
 	    }
 	}
 	if (svd_method == PROPACK) {
 	    BasicSSA(PriceBuffer, TotalLength, _WindowLength, Rmax, SSABuffer);
-        } else {
+	} else {
 	    BasicSSA_LAPACK(PriceBuffer, TotalLength, _WindowLength, Rmax, SSABuffer);
-        }
+	}
 	ExtBuffer[i] = SSABuffer[0];
     }
     ExtBuffer[0] = EMPTY_VALUE;
@@ -221,13 +222,13 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
     if (UpLine[1] != EMPTY_VALUE && UpLine[2] == EMPTY_VALUE) {
 	if (rates_total > barcounter4calculation) {
 	    if (STEALTH_MODE == 0) {
-                double _UpLine = iCustom (NULL, __Period, "CasualSSA", 512, 30, CheckLength, Rmax, USE_MA, PROPACK, DONOT_USE_PUSH_NOTIFICATION, DONOT_USE_ADAPTATION, MA_Period, MaxBars, 1, 1, 1);
-	        if (_UpLine != EMPTY_VALUE) { 
-	           notification_message = StringFormat("CasualSSA: %s, %d Timeframe, STRONG BUY @%g %s",Symbol(), Period(), Bid, TimeToStr(TimeGMT()));
-	           Print(notification_message);
-	           if (push_notification == USE_PUSH_NOTIFICATION) SendNotification(notification_message);
+		double _UpLine = iCustom(NULL, __Period, "CasualSSA", TotalLength, __WindowLength, CheckLength, Rmax, USE_MA, PROPACK, DONOT_USE_PUSH_NOTIFICATION, DONOT_USE_ADAPTATION, MA_Period, MaxBars, 1, 1, 1);
+		if (_UpLine != EMPTY_VALUE) {
+		    notification_message = StringFormat("CasualSSA: %s, %d Timeframe, STRONG BUY @%g %s", Symbol(), Period(), Bid, TimeToStr(TimeGMT()));
+		    Print(notification_message);
+		    if (push_notification == USE_PUSH_NOTIFICATION) SendNotification(notification_message);
 		}
-            }
+	    }
 	    barcounter4calculation = rates_total;
 	}
     }
@@ -236,13 +237,13 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
     if (DnLine[1] != EMPTY_VALUE && DnLine[2] == EMPTY_VALUE) {
 	if (rates_total > barcounter4calculation) {
 	    if (STEALTH_MODE == 0) {
-                double _DnLine = iCustom (NULL, __Period, "CasualSSA", 512, 30, CheckLength, Rmax, USE_MA, PROPACK, DONOT_USE_PUSH_NOTIFICATION, DONOT_USE_ADAPTATION, MA_Period, MaxBars, 1, 2, 1);
-	        if (_DnLine != EMPTY_VALUE) { 
-                    notification_message = StringFormat("CasualSSA: %s, %d Timeframe, STRONG SELL @%g %s", Symbol(), Period(), Ask, TimeToStr(TimeGMT()));
-	            Print(notification_message);
-   	            if (push_notification == USE_PUSH_NOTIFICATION) SendNotification(notification_message);
-                }
-            }
+		double _DnLine = iCustom(NULL, __Period, "CasualSSA", TotalLength, __WindowLength, CheckLength, Rmax, USE_MA, PROPACK, DONOT_USE_PUSH_NOTIFICATION, DONOT_USE_ADAPTATION, MA_Period, MaxBars, 1, 2, 1);
+		if (_DnLine != EMPTY_VALUE) {
+		    notification_message = StringFormat("CasualSSA: %s, %d Timeframe, STRONG SELL @%g %s", Symbol(), Period(), Ask, TimeToStr(TimeGMT()));
+		    Print(notification_message);
+		    if (push_notification == USE_PUSH_NOTIFICATION) SendNotification(notification_message);
+		}
+	    }
 	    barcounter4calculation = rates_total;
 	}
     }
