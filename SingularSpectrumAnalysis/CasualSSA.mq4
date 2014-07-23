@@ -200,20 +200,16 @@ int OnCalculate(const int rates_total, const int prev_calculated, const datetime
 	    UpLine[i] = EMPTY_VALUE;
 	    DnLine[i] = ExtBuffer[i];
 	}
-	if (UpLine[i] != EMPTY_VALUE && UpLine[i + 1] == EMPTY_VALUE)
-	    UpLine[i + 1] = ExtBuffer[i + 1];
-	if (DnLine[i] != EMPTY_VALUE && DnLine[i + 1] == EMPTY_VALUE)
-	    DnLine[i + 1] = ExtBuffer[i + 1];
+	if (UpLine[i] != EMPTY_VALUE && UpLine[i + 1] == EMPTY_VALUE) UpLine[i + 1] = ExtBuffer[i + 1];
+	if (DnLine[i] != EMPTY_VALUE && DnLine[i + 1] == EMPTY_VALUE) DnLine[i + 1] = ExtBuffer[i + 1];
     }
 
     /* Draw BUY/SELL arrow */
     for (i = limit - 1; i >= 1; i--) {
 	UpArrow[i] = EMPTY_VALUE;
 	DnArrow[i] = EMPTY_VALUE;
-	if (UpLine[i + 1] != EMPTY_VALUE && UpLine[i] == EMPTY_VALUE)
-	    DnArrow[i] = ExtBuffer[i];
-	if (DnLine[i + 1] != EMPTY_VALUE && DnLine[i] == EMPTY_VALUE)
-	    UpArrow[i] = ExtBuffer[i];
+	if (UpLine[i + 1] != EMPTY_VALUE && UpLine[i] == EMPTY_VALUE) DnArrow[i] = ExtBuffer[i];
+	if (DnLine[i + 1] != EMPTY_VALUE && DnLine[i] == EMPTY_VALUE) UpArrow[i] = ExtBuffer[i];
     }
     UpArrow[0] = EMPTY_VALUE;
     DnArrow[0] = EMPTY_VALUE;
